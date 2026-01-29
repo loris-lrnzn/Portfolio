@@ -1,8 +1,10 @@
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
 import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 
 const ProjectRow = ({ project, index, total }) => {
+  const navigate = useNavigate()
   const [isHovered, setIsHovered] = useState(false)
   const rowRef = useRef(null)
   const x = useMotionValue(0)
@@ -47,6 +49,7 @@ const ProjectRow = ({ project, index, total }) => {
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
+      onClick={() => navigate(`/project/${project.id}`)}
       className="group relative w-full py-20 border-b border-gray-100 cursor-pointer overflow-hidden clickable-card"
       whileHover={{ 
         borderColor: 'rgba(37, 99, 235, 0.1)',

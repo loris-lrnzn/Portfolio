@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Project;
+use App\Service\AuthService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 class ApiController extends AbstractController
@@ -25,6 +27,27 @@ class ApiController extends AbstractController
                 'github_link' => $project->getGithubLink(),
             ];
         }, $projects);
+
+        return $this->json($data);
+    }
+
+    #[Route('/api/projects/{id}', name: 'api_project_detail', methods: ['GET'])]
+    public function getProject(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $project = $em->getRepository(Project::class)->find($id);
+        
+        if (!$project) {
+            return $this->json(['error' => 'Project not found'], 404);
+        }
+
+        $data = [
+            'id' => $project->getId(),
+            'title' => $project->getTitle(),
+            'description' => $project->getDescription(),
+            'technology_tags' => $project->getTechnologyTags(),
+            'image_url' => $project->getImageUrl(),
+            'github_link' => $project->getGithubLink(),
+        ];
 
         return $this->json($data);
     }
@@ -94,5 +117,115 @@ class ApiController extends AbstractController
             'message' => 'Projects seeded successfully',
             'count' => count($projectsData)
         ]);
+    }
+
+    #[Route('/api/admin/projects', name: 'api_admin_projects_create', methods: ['POST'])]
+    public function createProject(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+        
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        $project = new Project();
+        $project->setTitle($data['title'] ?? '');
+        $project->setDescription($data['description'] ?? '');
+        $project->setTechnologyTags($data['technology_tags'] ?? []);
+        $project->setImageUrl($data['image_url'] ?? '');
+        $project->setGithubLink($data['github_link'] ?? '');
+
+        $em->persist($project);
+        $em->flush();
+
+        return $this->json([
+            'id' => $project->getId(),
+            'title' => $project->getTitle(),
+            'description' => $project->getDescription(),
+            'technology_tags' => $project->getTechnologyTags(),
+            'image_url' => $project->getImageUrl(),
+            'github_link' => $project->getGithubLink(),
+        ], 201);
+    }
+
+    #[Route('/api/admin/projects/{id}', name: 'api_admin_projects_update', methods: ['PUT'])]
+    public function updateProject(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+        
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $project = $em->getRepository(Project::class)->find($id);
+        if (!$project) {
+            return $this->json(['error' => 'Project not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (isset($data['title'])) {
+            $project->setTitle($data['title']);
+        }
+        if (isset($data['description'])) {
+            $project->setDescription($data['description']);
+        }
+        if (isset($data['technology_tags'])) {
+            $project->setTechnologyTags($data['technology_tags']);
+        }
+        if (isset($data['image_url'])) {
+            $project->setImageUrl($data['image_url']);
+        }
+        if (isset($data['github_link'])) {
+            $project->setGithubLink($data['github_link']);
+        }
+
+        $em->flush();
+
+        return $this->json([
+            'id' => $project->getId(),
+            'title' => $project->getTitle(),
+            'description' => $project->getDescription(),
+            'technology_tags' => $project->getTechnologyTags(),
+            'image_url' => $project->getImageUrl(),
+            'github_link' => $project->getGithubLink(),
+        ]);
+    }
+
+    #[Route('/api/admin/projects/{id}', name: 'api_admin_projects_delete', methods: ['DELETE'])]
+    public function deleteProject(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+        
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $project = $em->getRepository(Project::class)->find($id);
+        if (!$project) {
+            return $this->json(['error' => 'Project not found'], 404);
+        }
+
+        $em->remove($project);
+        $em->flush();
+
+        return $this->json(['message' => 'Project deleted successfully']);
     }
 }

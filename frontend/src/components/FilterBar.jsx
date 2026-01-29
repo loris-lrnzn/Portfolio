@@ -2,9 +2,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { useState } from 'react'
 
-const FilterBar = ({ technologies, selectedFilters, onFilterChange }) => {
+// eslint-disable-next-line react/prop-types
+const FilterBar = ({ technologies = [], selectedFilters = [], onFilterChange }) => {
   const [searchQuery, setSearchQuery] = useState('')
-  const allTechnologies = [...new Set(technologies.flat())]
+  // technologies est déjà un tableau plat depuis App.jsx (flatMap)
+  // S'assurer que c'est bien un tableau et extraire les valeurs uniques
+  const allTechnologies = [...new Set(Array.isArray(technologies) ? technologies : [])].filter(Boolean)
   
   const filteredTechnologies = allTechnologies.filter(tech =>
     tech.toLowerCase().includes(searchQuery.toLowerCase())
