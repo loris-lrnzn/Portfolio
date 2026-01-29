@@ -154,7 +154,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-8 py-4 rounded-full real-glass text-gray-900 font-semibold text-lg hover:shadow-xl hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-8 py-4 rounded-full real-glass text-gray-900 font-semibold text-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Connexion...' : 'Se connecter'}
               </button>

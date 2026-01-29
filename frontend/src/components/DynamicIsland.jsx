@@ -15,8 +15,9 @@ const DynamicIsland = () => {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
             onClick={() => setIsExpanded(true)}
             className="glass-white rounded-full px-8 py-4 shadow-2xl cursor-pointer"
           >
@@ -81,14 +82,15 @@ const DynamicIsland = () => {
                   }}
                 />
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
                   onClick={() => {
                     if (message.trim()) {
                       setMessage('')
                     }
                   }}
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white hover:shadow-lg transition-all duration-300"
+                  className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white hover:shadow-lg transition-colors duration-200"
                 >
                   <Send size={18} />
                 </motion.button>

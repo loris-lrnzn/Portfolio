@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { Code, Mail, Github, Linkedin } from 'lucide-react'
+import { Code, Mail, Github, Instagram } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -41,9 +41,9 @@ const Header = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.2, type: 'tween', duration: 0.2, ease: 'easeOut' }}
               className="flex items-center gap-3 cursor-pointer group"
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.02 }}
             >
               <div className="w-10 h-10 rounded-xl glass-strong flex items-center justify-center group-hover:glass-strong transition-all duration-300">
                 <Code className="text-gray-900" size={20} />
@@ -95,9 +95,9 @@ const Header = () => {
           {/* Social Links */}
           <div className="flex items-center gap-2">
             {[
-              { href: 'https://github.com', icon: Github },
-              { href: 'https://linkedin.com', icon: Linkedin },
-              { href: 'mailto:contact@example.com', icon: Mail }
+              { href: 'https://github.com/loris-lrnzn', icon: Github },
+              { href: 'https://instagram.com/loris_lrnzn', icon: Instagram },
+              { href: 'mailto:lorislorenzini@outlook.com', icon: Mail }
             ].map((social, index) => (
               <motion.a
                 key={social.href}
@@ -107,9 +107,10 @@ const Header = () => {
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 + index * 0.1, type: 'spring', stiffness: 200 }}
-                whileHover={{ scale: 1.1, rotate: 5, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-10 h-10 rounded-full glass-light flex items-center justify-center text-gray-700 hover:text-gray-900 hover:glass transition-all duration-300 cursor-pointer"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
+                className="w-10 h-10 rounded-full glass-light flex items-center justify-center text-gray-700 hover:text-gray-900 hover:glass transition-colors duration-200 cursor-pointer"
               >
                 <social.icon size={18} />
               </motion.a>

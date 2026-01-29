@@ -61,12 +61,13 @@ const FilterBar = ({ technologies = [], selectedFilters = [], onFilterChange }) 
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     whileHover={{ 
-                      scale: 1.05,
+                      scale: 1.02,
                       color: isSelected ? undefined : '#2563EB'
                     }}
                     whileTap={{ scale: 0.98 }}
+                    transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
                     onClick={() => handleToggleFilter(tech)}
-                    className={`relative text-xs font-extralight tracking-[0.2em] uppercase transition-all duration-300 ${
+                    className={`relative text-xs font-extralight tracking-[0.2em] uppercase transition-colors duration-200 ${
                       isSelected
                         ? 'text-[#2563EB]'
                         : 'text-gray-400 hover:text-gray-600'
@@ -106,10 +107,11 @@ const FilterBar = ({ technologies = [], selectedFilters = [], onFilterChange }) 
             className="flex justify-center pt-2"
           >
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
               onClick={handleClearAll}
-              className="flex items-center gap-2 text-[10px] text-gray-400 hover:text-gray-600 font-extralight tracking-[0.3em] uppercase transition-colors duration-300"
+              className="flex items-center gap-2 text-[10px] text-gray-400 hover:text-gray-600 font-extralight tracking-[0.3em] uppercase transition-colors duration-200"
             >
               <X size={10} />
               Réinitialiser

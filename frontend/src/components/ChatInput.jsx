@@ -89,8 +89,9 @@ const ChatInput = () => {
               />
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
                 className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2563EB] to-[#06B6D4] flex items-center justify-center flex-shrink-0 shadow-lg"
                 onClick={(e) => e.stopPropagation()}
               >

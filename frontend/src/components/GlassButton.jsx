@@ -5,7 +5,7 @@ const GlassButton = ({ children, href, onClick, variant = 'primary', className =
   const baseClasses = 'px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 flex items-center gap-2 group'
   
   const variants = {
-    primary: 'real-glass text-gray-900 hover:shadow-xl hover:scale-105',
+    primary: 'real-glass text-gray-900 hover:shadow-xl hover:scale-[1.02]',
     secondary: 'glass text-gray-900 hover:glass-strong'
   }
 
@@ -20,8 +20,8 @@ const GlassButton = ({ children, href, onClick, variant = 'primary', className =
     return (
       <motion.a
         href={href}
-        whileHover={{ scale: 1.05, y: -2 }}
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
         className={`${baseClasses} ${variants[variant]} ${className}`}
       >
         {content}
@@ -32,8 +32,8 @@ const GlassButton = ({ children, href, onClick, variant = 'primary', className =
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ scale: 1.05, y: -2 }}
-      whileTap={{ scale: 0.95 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
       className={`${baseClasses} ${variants[variant]} ${className}`}
     >
       {content}

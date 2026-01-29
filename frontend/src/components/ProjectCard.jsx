@@ -141,9 +141,9 @@ const ProjectCard = ({ project, index }) => {
                 href={project.github_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/60 backdrop-blur-sm hover:bg-white/80 text-gray-700 font-semibold transition-all duration-300 border border-gray-200/40"
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/60 backdrop-blur-sm hover:bg-white/80 text-gray-700 font-semibold transition-colors duration-200 border border-gray-200/40"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Github size={18} />
@@ -151,9 +151,9 @@ const ProjectCard = ({ project, index }) => {
               </motion.a>
             )}
             <motion.button
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] text-white font-bold transition-all duration-300 shadow-lg shadow-blue-500/30"
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] text-white font-bold transition-colors duration-200 shadow-lg shadow-blue-500/30"
             >
               <span>Découvrir</span>
               <ExternalLink size={18} />

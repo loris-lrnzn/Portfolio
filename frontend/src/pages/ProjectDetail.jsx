@@ -117,7 +117,7 @@ const ProjectDetail = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
             onClick={() => navigate('/')}
-            className="absolute top-8 left-8 z-10 w-12 h-12 rounded-full glass-strong flex items-center justify-center hover:scale-110 transition-transform duration-300"
+            className="absolute top-8 left-8 z-10 w-12 h-12 rounded-full glass-strong flex items-center justify-center hover:scale-[1.02] transition-transform duration-200"
           >
             <ArrowLeft className="text-gray-900" size={20} />
           </motion.button>
@@ -185,9 +185,9 @@ const ProjectDetail = () => {
                 href={project.github_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-6 py-3 rounded-full glass-strong text-sm font-medium text-gray-900 hover:text-[#2563EB] transition-colors duration-300"
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
+                className="flex items-center gap-2 px-6 py-3 rounded-full glass-strong text-sm font-medium text-gray-900 hover:text-[#2563EB] transition-colors duration-200"
               >
                 <Github size={18} />
                 <span>Code Source</span>

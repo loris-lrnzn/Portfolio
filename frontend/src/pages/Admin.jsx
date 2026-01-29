@@ -143,19 +143,21 @@ const Admin = () => {
           </div>
           <div className="flex items-center gap-4">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
               onClick={() => handleOpenModal()}
-              className="px-6 py-3 rounded-full glass-strong text-gray-900 font-medium flex items-center gap-2 hover:shadow-lg transition-all duration-300"
+              className="px-6 py-3 rounded-full glass-strong text-gray-900 font-medium flex items-center gap-2 hover:shadow-lg transition-colors duration-200"
             >
               <Plus size={20} />
               <span>Nouveau projet</span>
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
               onClick={handleLogout}
-              className="px-6 py-3 rounded-full glass text-gray-900 font-medium flex items-center gap-2 hover:shadow-lg transition-all duration-300"
+              className="px-6 py-3 rounded-full glass text-gray-900 font-medium flex items-center gap-2 hover:shadow-lg transition-colors duration-200"
             >
               <LogOut size={20} />
               <span>Déconnexion</span>
@@ -181,7 +183,7 @@ const Admin = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: index * 0.05 }}
-                  className="glass-card rounded-2xl p-6 hover:shadow-xl transition-all duration-300"
+                  className="glass-card rounded-2xl p-6 hover:shadow-xl transition-shadow duration-200"
                 >
                   {project.image_url && (
                     <img
@@ -196,18 +198,20 @@ const Admin = () => {
                   </p>
                   <div className="flex items-center gap-2 mt-4">
                     <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
                       onClick={() => handleOpenModal(project)}
-                      className="p-2 rounded-full glass-light hover:glass-strong transition-all duration-300"
+                      className="p-2 rounded-full glass-light hover:glass-strong transition-colors duration-200"
                     >
                       <Edit2 size={16} className="text-gray-700" />
                     </motion.button>
                     <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
                       onClick={() => handleDelete(project.id)}
-                      className="p-2 rounded-full glass-light hover:bg-red-50 transition-all duration-300"
+                      className="p-2 rounded-full glass-light hover:bg-red-50 transition-colors duration-200"
                     >
                       <Trash2 size={16} className="text-red-600" />
                     </motion.button>
@@ -242,7 +246,7 @@ const Admin = () => {
                 </h2>
                 <button
                   onClick={handleCloseModal}
-                  className="p-2 rounded-full glass-light hover:glass-strong transition-all duration-300"
+                  className="p-2 rounded-full glass-light hover:glass-strong transition-colors duration-200"
                 >
                   <X size={20} className="text-gray-700" />
                 </button>

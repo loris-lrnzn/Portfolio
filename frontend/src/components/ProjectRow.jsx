@@ -54,7 +54,6 @@ const ProjectRow = ({ project, index, total }) => {
       whileHover={{ 
         borderColor: 'rgba(37, 99, 235, 0.1)',
       }}
-      transition={{ duration: 0.4 }}
     >
       <div className="container mx-auto px-6 md:px-8 max-w-7xl">
         <div className="flex items-center justify-between gap-8 md:gap-12 relative z-10">
@@ -76,9 +75,9 @@ const ProjectRow = ({ project, index, total }) => {
             <motion.h3
               className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tighter leading-[0.9] flex-1"
               animate={{
-                x: isHovered ? 20 : 0,
+                x: isHovered ? 8 : 0,
               }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
+              transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
             >
               <span className={isHovered ? 'bg-gradient-to-r from-[#2563EB] via-[#06B6D4] to-[#2563EB] bg-clip-text text-transparent' : 'text-gray-900'}>
                 {project.title}
