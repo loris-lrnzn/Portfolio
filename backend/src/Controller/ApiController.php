@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Message;
 use App\Entity\Project;
 use App\Service\AuthService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -227,5 +228,82 @@ class ApiController extends AbstractController
         $em->flush();
 
         return $this->json(['message' => 'Project deleted successfully']);
+    }
+
+    #[Route('/api/messages', name: 'api_messages_create', methods: ['POST'])]
+    public function createMessage(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        // Validation
+        if (!isset($data['message']) || empty(trim($data['message']))) {
+            return $this->json(['error' => 'Message is required'], 400);
+        }
+
+        $message = new Message();
+        $message->setFromEmail($data['fromEmail'] ?? null);
+        $message->setMessage(trim($data['message']));
+
+        $em->persist($message);
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Message sent successfully'
+        ], 201);
+    }
+
+    #[Route('/api/admin/messages', name: 'api_admin_messages', methods: ['GET'])]
+    public function getMessages(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $messages = $em->getRepository(Message::class)->findBy([], ['createdAt' => 'DESC']);
+
+        $data = array_map(function (Message $message) {
+            return [
+                'id' => $message->getId(),
+                'fromEmail' => $message->getFromEmail(),
+                'message' => $message->getMessage(),
+                'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i:s'),
+                'isRead' => $message->isRead(),
+            ];
+        }, $messages);
+
+        return $this->json($data);
+    }
+
+    #[Route('/api/admin/messages/{id}/read', name: 'api_admin_messages_mark_read', methods: ['PATCH'])]
+    public function markMessageAsRead(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $message = $em->getRepository(Message::class)->find($id);
+        if (!$message) {
+            return $this->json(['error' => 'Message not found'], 404);
+        }
+
+        $message->setIsRead(true);
+        $em->flush();
+
+        return $this->json(['success' => true]);
     }
 }

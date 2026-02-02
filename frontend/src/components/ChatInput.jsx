@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { MessageCircle, Send } from 'lucide-react'
 import ChatResponse from './ChatResponse'
 
 const ChatInput = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [isExpanded, setIsExpanded] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [showResponse, setShowResponse] = useState(false)
@@ -22,21 +25,47 @@ const ChatInput = () => {
     setIsExpanded(true)
   }
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault()
     if (!inputValue.trim()) return
 
-    // Afficher le loader
+    const question = inputValue.trim()
+    setInputValue('')
     setIsLoading(true)
     setShowResponse(true)
-    const question = inputValue
-    setInputValue('')
 
-    // Simuler une réponse après un délai
-    setTimeout(() => {
+    const baseUrl = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8001'
+    const chatUrl = `${baseUrl.replace(/\/$/, '')}/chatbot/portfolio/api/chat/`
+
+    try {
+      const res = await fetch(chatUrl, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: question })
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data.reply) {
+        setResponse(data.reply)
+        if (data.action) {
+          if (data.action.type === 'anchor') {
+            if (location.pathname !== '/') navigate('/')
+            setTimeout(() => {
+              const el = document.getElementById(data.action.id)
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }, 400)
+          } else if (data.action.type === 'project') {
+            navigate(`/project/${data.action.id}`)
+          }
+        }
+      } else {
+        setResponse(data.error || 'Une erreur est survenue. Réessayez plus tard.')
+      }
+    } catch (err) {
+      setResponse('Impossible de joindre l\'assistant. Vérifiez que le serveur chatbot est démarré (ex. Django sur le port 8001).')
+    } finally {
       setIsLoading(false)
-      setResponse(`Merci pour votre question "${question}" ! Je suis un assistant virtuel conçu pour vous aider à en savoir plus sur les projets de ce portfolio. N'hésitez pas à me poser des questions sur les technologies utilisées, les fonctionnalités, ou tout autre aspect qui vous intéresse.`)
-    }, 2000)
+    }
   }
 
   const handleCloseResponse = () => {

@@ -8,6 +8,7 @@ import ProjectList from '../components/ProjectList'
 import ChatInput from '../components/ChatInput'
 import CustomCursor from '../components/CustomCursor'
 import ScrollProgress from '../components/ScrollProgress'
+import Footer from '../components/Footer'
 
 // Utiliser le proxy Vite pour éviter les problèmes CORS
 const API_URL = '/api'
@@ -117,6 +118,8 @@ const Home = () => {
           error={error}
         />
       </section>
+
+      <Footer withChatPadding />
 
       {/* Chatbot Bar - Fixed at bottom */}
       <ChatInput />

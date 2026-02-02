@@ -7,6 +7,7 @@ import Header from '../components/Header'
 import CustomCursor from '../components/CustomCursor'
 import ScrollProgress from '../components/ScrollProgress'
 import GlassButton from '../components/GlassButton'
+import Footer from '../components/Footer'
 
 const API_URL = '/api'
 
@@ -267,6 +268,8 @@ const ProjectDetail = () => {
           </GlassButton>
         </motion.div>
       </motion.div>
+
+      <Footer />
     </div>
   )
 }

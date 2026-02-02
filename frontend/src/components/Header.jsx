@@ -106,10 +106,9 @@ const Header = () => {
                 rel={social.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 + index * 0.1, type: 'spring', stiffness: 200 }}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
-                transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
+                transition={{ delay: 0.5 + index * 0.1, type: 'tween', duration: 0.2, ease: 'easeOut' }}
                 className="w-10 h-10 rounded-full glass-light flex items-center justify-center text-gray-700 hover:text-gray-900 hover:glass transition-colors duration-200 cursor-pointer"
               >
                 <social.icon size={18} />
