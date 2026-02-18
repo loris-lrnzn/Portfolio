@@ -1,38 +1,67 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { MessageCircle, Send } from 'lucide-react'
-import ChatResponse from './ChatResponse'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MessageCircle, Send, X, Sparkles } from 'lucide-react'
+import useReducedMotion from '../hooks/useReducedMotion'
 
 const ChatInput = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const [isExpanded, setIsExpanded] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
+  const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
-  const [showResponse, setShowResponse] = useState(false)
+  const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [response, setResponse] = useState('')
   const inputRef = useRef(null)
+  const messagesEndRef = useRef(null)
+  const containerRef = useRef(null)
 
-  // Focus sur l'input quand la barre s'ouvre
+  // Focus input when opened
   useEffect(() => {
-    if (isExpanded && inputRef.current) {
+    if (isOpen && inputRef.current) {
       inputRef.current.focus()
     }
-  }, [isExpanded])
+  }, [isOpen])
 
-  const handleBarClick = () => {
-    setIsExpanded(true)
-  }
+  // Scroll to bottom when new message
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+    }
+  }, [messages, isLoading, prefersReducedMotion])
 
-  const handleSend = async (e) => {
+  // Close on escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [])
+
+  // Close on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false)
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isOpen])
+
+  const handleSend = useCallback(async (e) => {
     e.preventDefault()
-    if (!inputValue.trim()) return
+    if (!inputValue.trim() || isLoading) return
 
     const question = inputValue.trim()
     setInputValue('')
+
+    // Add user message
+    setMessages(prev => [...prev, { type: 'user', content: question }])
     setIsLoading(true)
-    setShowResponse(true)
 
     const baseUrl = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8001'
     const chatUrl = `${baseUrl.replace(/\/$/, '')}/chatbot/portfolio/api/chat/`
@@ -45,100 +74,233 @@ const ChatInput = () => {
         body: JSON.stringify({ message: question })
       })
       const data = await res.json().catch(() => ({}))
+
       if (res.ok && data.reply) {
-        setResponse(data.reply)
+        setMessages(prev => [...prev, { type: 'assistant', content: data.reply }])
+
+        // Handle actions
         if (data.action) {
+          const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth'
           if (data.action.type === 'anchor') {
             if (location.pathname !== '/') navigate('/')
             setTimeout(() => {
               const el = document.getElementById(data.action.id)
-              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              if (el) el.scrollIntoView({ behavior: scrollBehavior, block: 'start' })
             }, 400)
           } else if (data.action.type === 'project') {
             navigate(`/project/${data.action.id}`)
           }
         }
       } else {
-        setResponse(data.error || 'Une erreur est survenue. Réessayez plus tard.')
+        setMessages(prev => [...prev, {
+          type: 'assistant',
+          content: data.error || 'Une erreur est survenue. Réessayez plus tard.',
+          isError: true
+        }])
       }
-    } catch (err) {
-      setResponse('Impossible de joindre l\'assistant. Vérifiez que le serveur chatbot est démarré (ex. Django sur le port 8001).')
+    } catch {
+      setMessages(prev => [...prev, {
+        type: 'assistant',
+        content: 'Impossible de joindre l\'assistant. Vérifiez que le serveur est démarré.',
+        isError: true
+      }])
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [inputValue, isLoading, location.pathname, navigate, prefersReducedMotion])
 
-  const handleCloseResponse = () => {
-    setShowResponse(false)
-    setResponse('')
-    setIsLoading(false)
+  const getAnimationProps = (props) => {
+    if (prefersReducedMotion) return {}
+    return props
   }
 
   return (
-    <>
-      {/* Barre de chat - Fixe en bas */}
+    <div className="fixed bottom-5 left-0 right-0 z-50 flex justify-center px-4">
       <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
-        className="fixed bottom-5 left-0 right-0 z-50 flex justify-center px-4"
+        ref={containerRef}
+        {...getAnimationProps({
+          initial: { y: 100, opacity: 0 },
+          animate: { y: 0, opacity: 1 },
+          transition: { duration: 0.6, delay: 0.3 }
+        })}
+        className="w-full max-w-xl"
       >
-        <motion.div
-          animate={{
-            scale: isExpanded ? 1.02 : 1,
-          }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="glass-chat rounded-full w-full max-w-xl cursor-pointer clickable-card"
-          onClick={handleBarClick}
-        >
-          {!isExpanded ? (
-            // État fermé - Placeholder
-            <div className="flex items-center gap-3 px-6 py-3 group">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2563EB] to-[#06B6D4] flex items-center justify-center flex-shrink-0 shadow-lg">
-                <MessageCircle className="text-white" size={16} />
-              </div>
-              <span className="text-gray-700 group-hover:text-gray-900 transition-colors duration-300 font-medium text-sm">
-                Poser une question à mon assistant...
-              </span>
-            </div>
-          ) : (
-            // État ouvert - Input
-            <form onSubmit={handleSend} className="flex items-center gap-3 px-6 py-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2563EB] to-[#06B6D4] flex items-center justify-center flex-shrink-0 shadow-lg">
-                <MessageCircle className="text-white" size={16} />
-              </div>
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Tapez votre question..."
-                className="flex-1 bg-transparent border-0 outline-none text-gray-900 placeholder-gray-500 text-sm font-medium focus:outline-none"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'tween', duration: 0.15, ease: 'easeOut' }}
-                className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2563EB] to-[#06B6D4] flex items-center justify-center flex-shrink-0 shadow-lg"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Send className="text-white" size={14} />
-              </motion.button>
-            </form>
-          )}
-        </motion.div>
-      </motion.div>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              {...getAnimationProps({
+                initial: { opacity: 0, y: 20, height: 0 },
+                animate: { opacity: 1, y: 0, height: 'auto' },
+                exit: { opacity: 0, y: 20, height: 0 },
+                transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+              })}
+              className="mb-2 overflow-hidden"
+            >
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary-blue to-primary-cyan flex items-center justify-center">
+                      <Sparkles className="text-white" size={12} />
+                    </div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      Assistant
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="w-7 h-7 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
+                    aria-label="Fermer l'assistant"
+                  >
+                    <X size={14} className="text-gray-500" />
+                  </button>
+                </div>
 
-      {/* Composant ChatResponse */}
-      <ChatResponse
-        isOpen={showResponse}
-        onClose={handleCloseResponse}
-        response={response}
-        isLoading={isLoading}
-      />
-    </>
+                {/* Messages */}
+                <div className="max-h-80 overflow-y-auto p-4 space-y-3">
+                  {messages.length === 0 && !isLoading && (
+                    <div className="text-center py-6">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+                        <MessageCircle size={20} className="text-gray-400" />
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-light">
+                        Posez-moi une question sur Loris,
+                        <br />ses projets ou ses compétences.
+                      </p>
+                    </div>
+                  )}
+
+                  {messages.map((msg, index) => (
+                    <motion.div
+                      key={index}
+                      {...getAnimationProps({
+                        initial: { opacity: 0, y: 10 },
+                        animate: { opacity: 1, y: 0 },
+                        transition: { duration: 0.2 }
+                      })}
+                      className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm ${
+                          msg.type === 'user'
+                            ? 'bg-primary-blue text-white rounded-br-md'
+                            : msg.isError
+                              ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-bl-md'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-md'
+                        }`}
+                      >
+                        <p className="leading-relaxed">{msg.content}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+
+                  {isLoading && (
+                    <motion.div
+                      {...getAnimationProps({
+                        initial: { opacity: 0, y: 10 },
+                        animate: { opacity: 1, y: 0 }
+                      })}
+                      className="flex justify-start"
+                    >
+                      <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-bl-md px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          {[0, 1, 2].map((i) => (
+                            <motion.div
+                              key={i}
+                              className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500"
+                              {...getAnimationProps({
+                                animate: { y: [0, -4, 0] },
+                                transition: {
+                                  duration: 0.5,
+                                  repeat: Infinity,
+                                  delay: i * 0.15,
+                                  ease: "easeInOut"
+                                }
+                              })}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input */}
+                <form onSubmit={handleSend} className="p-3 border-t border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder="Votre question..."
+                      className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary-blue/50 transition-shadow"
+                      disabled={isLoading}
+                    />
+                    <motion.button
+                      type="submit"
+                      disabled={!inputValue.trim() || isLoading}
+                      {...getAnimationProps({
+                        whileHover: { scale: 1.05 },
+                        whileTap: { scale: 0.95 }
+                      })}
+                      className="w-10 h-10 rounded-full bg-primary-blue flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                      aria-label="Envoyer"
+                    >
+                      <Send size={16} className="text-white" />
+                    </motion.button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Floating Button / Collapsed State */}
+        <motion.button
+          onClick={() => setIsOpen(!isOpen)}
+          {...getAnimationProps({
+            whileHover: { scale: 1.02 },
+            whileTap: { scale: 0.98 }
+          })}
+          className={`
+            w-full rounded-full transition-all duration-300
+            ${isOpen
+              ? 'bg-gray-900 dark:bg-white'
+              : 'bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 hover:shadow-xl'
+            }
+          `}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Fermer l'assistant" : "Ouvrir l'assistant"}
+        >
+          <div className="flex items-center gap-3 px-5 py-3">
+            <div className={`
+              w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-300
+              ${isOpen
+                ? 'bg-white dark:bg-gray-900'
+                : 'bg-gradient-to-br from-primary-blue to-primary-cyan shadow-lg'
+              }
+            `}>
+              <MessageCircle
+                className={isOpen ? 'text-gray-900 dark:text-white' : 'text-white'}
+                size={16}
+              />
+            </div>
+            <span className={`
+              text-sm font-medium transition-colors duration-300
+              ${isOpen
+                ? 'text-white dark:text-gray-900'
+                : 'text-gray-700 dark:text-gray-300'
+              }
+            `}>
+              {isOpen ? 'Fermer l\'assistant' : 'Poser une question...'}
+            </span>
+          </div>
+        </motion.button>
+      </motion.div>
+    </div>
   )
 }
 

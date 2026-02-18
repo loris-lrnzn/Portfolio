@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer require:*)",
+      "Bash(php bin/console:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(mysql:*)",
+      "Bash(chmod:*)",
+      "Bash(npm run build:*)"
+    ]
+  }
+}

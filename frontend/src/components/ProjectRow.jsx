@@ -1,192 +1,163 @@
-import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
-import { useState, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
+import useReducedMotion from '../hooks/useReducedMotion'
 
-const ProjectRow = ({ project, index, total }) => {
+const ProjectRow = ({ project, index }) => {
   const navigate = useNavigate()
+  const prefersReducedMotion = useReducedMotion()
   const [isHovered, setIsHovered] = useState(false)
-  const rowRef = useRef(null)
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
 
-  // Magnetic cursor effect for image with spring physics
-  const springConfig = { stiffness: 150, damping: 15 }
-  const imageXTransform = useTransform(x, (latest) => latest * 0.15)
-  const imageYTransform = useTransform(y, (latest) => latest * 0.15)
-  const imageX = useSpring(imageXTransform, springConfig)
-  const imageY = useSpring(imageYTransform, springConfig)
+  const handleClick = useCallback(() => {
+    navigate(`/project/${project.id}`)
+  }, [navigate, project.id])
 
-  const handleMouseMove = (e) => {
-    if (!rowRef.current) return
-    const rect = rowRef.current.getBoundingClientRect()
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
-    x.set((e.clientX - centerX) / rect.width)
-    y.set((e.clientY - centerY) / rect.height)
-  }
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleClick()
+    }
+  }, [handleClick])
 
-  const handleMouseLeave = () => {
-    x.set(0)
-    y.set(0)
-    setIsHovered(false)
-  }
-
-  // Format number with leading zero
   const projectNumber = String(index + 1).padStart(2, '0')
 
+  const getAnimationProps = (props) => {
+    if (prefersReducedMotion) return {}
+    return props
+  }
+
   return (
-    <motion.div
-      ref={rowRef}
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ 
-        duration: 0.8, 
-        delay: index * 0.08,
-        ease: [0.16, 1, 0.3, 1]
-      }}
-      onMouseMove={handleMouseMove}
+    <motion.article
+      {...getAnimationProps({
+        initial: { opacity: 0, y: 30 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, margin: "-50px" },
+        transition: {
+          duration: 0.6,
+          delay: index * 0.05,
+          ease: [0.16, 1, 0.3, 1]
+        }
+      })}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
-      onClick={() => navigate(`/project/${project.id}`)}
-      className="group relative w-full py-20 border-b border-gray-100 cursor-pointer overflow-hidden clickable-card"
-      whileHover={{ 
-        borderColor: 'rgba(37, 99, 235, 0.1)',
-      }}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      className="group relative cursor-pointer border-b border-gray-100 dark:border-gray-800 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-blue outline-none"
+      role="link"
+      tabIndex={0}
+      aria-label={`Voir le projet ${project.title}`}
     >
-      <div className="container mx-auto px-6 md:px-8 max-w-7xl">
-        <div className="flex items-center justify-between gap-8 md:gap-12 relative z-10">
-          {/* Left Side: Number & Title */}
-          <div className="flex items-start gap-6 md:gap-12 flex-1 min-w-0">
-            {/* Project Number */}
-            <motion.span
-              className="text-xs md:text-sm font-light tracking-widest flex-shrink-0"
-              animate={{
-                opacity: isHovered ? 0.8 : 1,
-                color: isHovered ? '#2563EB' : '#9CA3AF',
-              }}
-              transition={{ duration: 0.4 }}
+      <div className="container mx-auto px-4 md:px-8 max-w-6xl py-6 md:py-8">
+        <div className="flex items-center justify-between gap-4 md:gap-6">
+          {/* Left: Thumbnail + Number + Title */}
+          <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
+            {/* Thumbnail */}
+            <motion.div
+              className="relative w-16 h-12 md:w-24 md:h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0"
+              {...getAnimationProps({
+                animate: { scale: isHovered ? 1.05 : 1 }
+              })}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
-              {projectNumber}
-            </motion.span>
+              {project.image_url ? (
+                <img
+                  src={project.image_url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-lg font-bold text-gray-300 dark:text-gray-600">
+                    {projectNumber}
+                  </span>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Number + Year */}
+            <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
+              <span className="text-xs font-medium text-gray-400 dark:text-gray-500 tracking-widest tabular-nums">
+                {projectNumber}
+              </span>
+              {project.year && (
+                <>
+                  <span className="w-px h-3 bg-gray-200 dark:bg-gray-700" />
+                  <span className="text-xs font-medium text-gray-400 dark:text-gray-500 tabular-nums">
+                    {project.year}
+                  </span>
+                </>
+              )}
+            </div>
 
             {/* Title */}
             <motion.h3
-              className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tighter leading-[0.9] flex-1"
-              animate={{
-                x: isHovered ? 8 : 0,
-              }}
-              transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
+              className="text-xl sm:text-2xl md:text-3xl font-medium tracking-tight leading-tight truncate"
+              {...getAnimationProps({
+                animate: { x: isHovered ? 4 : 0 }
+              })}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
             >
-              <span className={isHovered ? 'bg-gradient-to-r from-[#2563EB] via-[#06B6D4] to-[#2563EB] bg-clip-text text-transparent' : 'text-gray-900'}>
+              <span className={
+                isHovered && !prefersReducedMotion
+                  ? 'bg-gradient-to-r from-primary-blue via-primary-cyan to-primary-blue bg-clip-text text-transparent'
+                  : 'text-gray-900 dark:text-gray-100'
+              }>
                 {project.title}
               </span>
             </motion.h3>
           </div>
 
-          {/* Right Side: Tags & Arrow */}
-          <div className="flex items-center gap-6 md:gap-8 flex-shrink-0">
-            {/* Technology Tags */}
-            <div className="hidden md:flex items-center gap-4">
+          {/* Right: Tags + Arrow */}
+          <div className="flex items-center gap-6 flex-shrink-0">
+            {/* Tags - Desktop only */}
+            <div className="hidden md:flex items-center gap-3">
               {project.technology_tags.slice(0, 3).map((tag, tagIndex) => (
                 <motion.span
                   key={tagIndex}
-                  className="text-xs font-light tracking-widest uppercase"
-                  animate={{
-                    opacity: isHovered ? 0.8 : 0.5,
-                    color: isHovered ? '#2563EB' : '#6B7280',
-                  }}
-                  transition={{ duration: 0.4, delay: tagIndex * 0.05 }}
+                  className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider"
+                  {...getAnimationProps({
+                    animate: {
+                      color: isHovered ? '#2563EB' : undefined,
+                      opacity: isHovered ? 1 : 0.7
+                    }
+                  })}
+                  transition={{ duration: 0.2, delay: tagIndex * 0.03 }}
                 >
                   {tag}
                 </motion.span>
               ))}
             </div>
 
-            {/* Arrow Icon */}
+            {/* Arrow */}
             <motion.div
-              className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/80 backdrop-blur-sm border flex items-center justify-center flex-shrink-0"
-              animate={{
-                scale: isHovered ? 1.1 : 1,
-                rotate: isHovered ? 45 : 0,
-                backgroundColor: isHovered ? 'rgba(37, 99, 235, 0.15)' : 'rgba(255, 255, 255, 0.8)',
-                borderColor: isHovered ? 'rgba(37, 99, 235, 0.3)' : 'rgba(0, 0, 0, 0.1)',
-              }}
-              transition={{ duration: 0.3 }}
+              className="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center"
+              {...getAnimationProps({
+                animate: {
+                  scale: isHovered ? 1.1 : 1,
+                  borderColor: isHovered ? '#2563EB' : undefined,
+                  backgroundColor: isHovered ? 'rgba(37, 99, 235, 0.1)' : 'transparent'
+                }
+              })}
+              transition={{ duration: 0.2 }}
             >
-              <ArrowUpRight 
-                className={isHovered ? 'text-[#2563EB]' : 'text-gray-900'}
-                size={isHovered ? 20 : 18}
-              />
+              <motion.div
+                {...getAnimationProps({
+                  animate: { rotate: isHovered ? 45 : 0 }
+                })}
+                transition={{ duration: 0.2 }}
+              >
+                <ArrowUpRight
+                  size={18}
+                  className={isHovered ? 'text-primary-blue' : 'text-gray-400 dark:text-gray-500'}
+                />
+              </motion.div>
             </motion.div>
           </div>
         </div>
 
-        {/* Mobile Tags */}
-        <div className="md:hidden mt-6 flex items-center gap-3 flex-wrap">
-          {project.technology_tags.slice(0, 3).map((tag, tagIndex) => (
-            <span
-              key={tagIndex}
-              className={`text-xs font-light tracking-widest uppercase ${
-                isHovered ? 'text-[#2563EB]' : 'text-gray-500'
-              }`}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
       </div>
-
-      {/* Reveal Image on Hover - Magnetic Cursor Effect */}
-      {project.image_url && (
-        <motion.div
-          className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
-          initial={{ opacity: 0 }}
-          animate={{
-            opacity: isHovered ? 1 : 0,
-          }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <motion.div
-            className="absolute inset-0"
-            style={{
-              x: useTransform(imageX, (latest) => latest * 50),
-              y: useTransform(imageY, (latest) => latest * 50),
-            }}
-          >
-            <motion.img
-              src={project.image_url}
-              alt={project.title}
-              className="w-full h-full object-cover"
-              initial={{ scale: 1.3, opacity: 0 }}
-              animate={{
-                scale: isHovered ? 1 : 1.3,
-                opacity: isHovered ? 1 : 0,
-              }}
-              transition={{ 
-                duration: 0.8, 
-                ease: [0.16, 1, 0.3, 1],
-                opacity: { duration: 0.4 }
-              }}
-            />
-            {/* Subtle glass overlay for depth */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/50 to-white/90 backdrop-blur-[1px]" />
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* Subtle background gradient on hover */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none z-0"
-        animate={{
-          opacity: isHovered ? 0.03 : 0,
-        }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#2563EB] via-[#06B6D4] to-purple-500" />
-      </motion.div>
-    </motion.div>
+    </motion.article>
   )
 }
 

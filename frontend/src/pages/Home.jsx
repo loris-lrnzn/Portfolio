@@ -1,16 +1,22 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import { useLocation } from 'react-router-dom'
 import axios from 'axios'
 import Header from '../components/Header'
 import Hero from '../components/Hero'
+import About from '../components/About'
+import Services from '../components/Services'
+import Skills from '../components/Skills'
 import FilterBar from '../components/FilterBar'
 import ProjectList from '../components/ProjectList'
+import CallToAction from '../components/CallToAction'
 import ChatInput from '../components/ChatInput'
 import CustomCursor from '../components/CustomCursor'
 import ScrollProgress from '../components/ScrollProgress'
+import ScrollToTop from '../components/ScrollToTop'
 import Footer from '../components/Footer'
+import useReducedMotion from '../hooks/useReducedMotion'
 
-// Utiliser le proxy Vite pour éviter les problèmes CORS
 const API_URL = '/api'
 
 const Home = () => {
@@ -18,10 +24,31 @@ const Home = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedFilters, setSelectedFilters] = useState([])
+  const prefersReducedMotion = useReducedMotion()
+  const location = useLocation()
 
   useEffect(() => {
     fetchProjects()
   }, [])
+
+  // Handle hash navigation (e.g., /#about)
+  useEffect(() => {
+    if (location.hash) {
+      const sectionId = location.hash.replace('#', '')
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const element = document.getElementById(sectionId)
+        if (element) {
+          const offset = 80
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
+          window.scrollTo({
+            top: elementPosition - offset,
+            behavior: prefersReducedMotion ? 'auto' : 'smooth'
+          })
+        }
+      }, 100)
+    }
+  }, [location.hash, prefersReducedMotion])
 
   const fetchProjects = async () => {
     try {
@@ -37,7 +64,6 @@ const Home = () => {
     }
   }
 
-  // Filter projects based on selected technologies
   const filteredProjects = useMemo(() => {
     if (selectedFilters.length === 0) {
       return projects
@@ -51,75 +77,100 @@ const Home = () => {
     )
   }, [projects, selectedFilters])
 
-  // Get all unique technologies
   const allTechnologies = useMemo(() => {
     return projects.flatMap(p => p.technology_tags)
   }, [projects])
 
+  const getAnimationProps = (props) => {
+    if (prefersReducedMotion) return {}
+    return props
+  }
+
   return (
-    <div className="min-h-screen bg-white relative">
-      {/* Custom Cursor - Always visible */}
+    <div className="min-h-screen bg-white dark:bg-dark-bg relative">
+      {/* Skip to content link - Accessibility */}
+      <a
+        href="#main-content"
+        className="skip-to-content"
+      >
+        Aller au contenu principal
+      </a>
+
+      {/* Custom Cursor - Desktop only */}
       <CustomCursor />
-      
+
       {/* Scroll Progress Bar */}
       <ScrollProgress />
 
       {/* Header */}
       <Header />
 
-      {/* Hero Section */}
-      <Hero />
+      {/* Main Content */}
+      <main id="main-content">
+        {/* Hero Section */}
+        <Hero />
 
-      {/* Projects Section - Editorial Style */}
-      <section id="projects" className="bg-white">
-        <div className="container mx-auto px-6 md:px-8 max-w-7xl">
-          {/* Section Header - Ultra Minimal */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="pt-10 pb-10 text-center"
-          >
-            <motion.span
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xs text-gray-400 font-light tracking-[0.3em] uppercase mb-8 block"
+        {/* About Section - Plus personnel */}
+        <About />
+
+        {/* Services Section - Ce que je propose */}
+        <Services />
+
+        {/* Skills Section */}
+        <Skills />
+
+        {/* Projects Section */}
+        <section id="projects" className="py-32 md:py-40 bg-white dark:bg-dark-bg" aria-labelledby="projects-title">
+          <div className="container mx-auto px-4 md:px-8 max-w-6xl">
+            {/* Section Header */}
+            <motion.div
+              {...getAnimationProps({
+                initial: { opacity: 0, y: 40 },
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: true, margin: '-100px' },
+                transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+              })}
+              className="text-center mb-20 md:mb-24"
             >
-              Portfolio
-            </motion.span>
-            <h2 className="text-6xl md:text-8xl lg:text-9xl font-light tracking-tighter leading-[0.85] mb-6">
-              <span className="text-gray-900">Pro</span>
-              <span className="bg-gradient-to-r from-[#2563EB] via-[#06B6D4] to-[#2563EB] bg-clip-text text-transparent">jets</span>
-            </h2>
-            <p className="text-sm text-gray-500 font-light tracking-wide max-w-xl mx-auto">
-              Une sélection de mes réalisations les plus récentes
-            </p>
-          </motion.div>
+              <span className="text-xs text-gray-400 dark:text-gray-500 font-medium tracking-[0.3em] uppercase">
+                Portfolio
+              </span>
+              <h2 id="projects-title" className="mt-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.15] text-gray-900 dark:text-gray-100">
+                Mes{' '}
+                <span className="bg-gradient-to-r from-primary-blue via-primary-cyan to-primary-blue bg-clip-text text-transparent">
+                  projets
+                </span>
+              </h2>
+            </motion.div>
 
-          {/* Filter Bar */}
-          {projects.length > 0 && (
-            <div className="mb-16">
-              <FilterBar
-                technologies={allTechnologies}
-                selectedFilters={selectedFilters}
-                onFilterChange={setSelectedFilters}
-              />
-            </div>
-          )}
-        </div>
+            {/* Filter Bar */}
+            {projects.length > 0 && (
+              <div className="mb-16">
+                <FilterBar
+                  technologies={allTechnologies}
+                  selectedFilters={selectedFilters}
+                  onFilterChange={setSelectedFilters}
+                />
+              </div>
+            )}
+          </div>
 
-        {/* Project List - Full Width Editorial */}
-        <ProjectList
-          projects={filteredProjects}
-          loading={loading}
-          error={error}
-        />
-      </section>
+          {/* Project List */}
+          <ProjectList
+            projects={filteredProjects}
+            loading={loading}
+            error={error}
+          />
+        </section>
+
+        {/* Call to Action - Avant le footer */}
+        <CallToAction />
+      </main>
 
       <Footer withChatPadding />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
 
       {/* Chatbot Bar - Fixed at bottom */}
       <ChatInput />

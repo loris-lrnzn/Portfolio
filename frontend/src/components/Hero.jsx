@@ -1,162 +1,153 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
-import GlassButton from './GlassButton'
-import { wordRevealVariants } from '../utils/textReveal'
+import { ArrowDownRight } from 'lucide-react'
+import useReducedMotion from '../hooks/useReducedMotion'
 
 const Hero = () => {
+  const prefersReducedMotion = useReducedMotion()
   const sectionRef = useRef(null)
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"]
   })
 
-  // Parallax effects
-  const y = useTransform(scrollYProgress, [0, 1], [0, 150])
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95])
+  const y = useTransform(scrollYProgress, [0, 0.5], [0, 100])
 
-  const titleWords = ["LORIS", "LORENZINI"]
-  const subtitleWords = [
-    "Développeur Full Stack passionné par la création",
-    "d'expériences web modernes et innovantes"
-  ]
+  const scrollToProjects = () => {
+    const el = document.getElementById('projects')
+    if (el) el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+  }
+
+  const letterVariants = {
+    hidden: { y: 80, opacity: 0 },
+    visible: (i) => ({
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        delay: i * 0.04,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    })
+  }
+
+  const firstName = "LORIS"
+  const lastName = "LORENZINI"
 
   return (
-    <section 
+    <section
       ref={sectionRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 bg-white"
+      id="hero"
+      className="relative h-screen flex flex-col items-center justify-center bg-white dark:bg-dark-bg overflow-hidden"
+      aria-label="Présentation"
     >
-      {/* Animated Background Elements */}
+      {/* Main content */}
       <motion.div
-        className="absolute inset-0 overflow-hidden pointer-events-none"
-        style={{ opacity: useTransform(scrollYProgress, [0, 1], [0.3, 0]) }}
+        className="relative z-10 text-center"
+        style={prefersReducedMotion ? {} : { opacity, y }}
       >
+        {/* Role */}
         <motion.div
-          className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-gradient-to-br from-[#2563EB]/10 to-[#06B6D4]/10 blur-3xl"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-br from-[#06B6D4]/10 to-purple-500/10 blur-3xl"
-          animate={{
-            x: [0, -100, 0],
-            y: [0, -50, 0],
-            scale: [1, 1.3, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-      </motion.div>
+          initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="flex items-center justify-center gap-4 mb-6"
+        >
+          <span className="w-12 h-px bg-gray-300 dark:bg-gray-700" />
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-medium tracking-[0.3em] uppercase">
+            Développeur Full Stack
+          </span>
+          <span className="w-12 h-px bg-gray-300 dark:bg-gray-700" />
+        </motion.div>
 
-      <motion.div 
-        className="container mx-auto px-8 relative z-10"
-        style={{ y, opacity, scale }}
-      >
-        <div className="max-w-6xl mx-auto">
-          {/* Name - Massive with letter reveal animation */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            className="mb-8"
-          >
-            <h1 className="text-9xl md:text-[14rem] font-black leading-[0.85] tracking-[-0.02em]">
-              <motion.span 
-                className="block text-gray-900"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              >
-                LORIS
-              </motion.span>
-              <motion.span 
-                className="block bg-gradient-to-r from-[#2563EB] via-[#06B6D4] to-[#2563EB] bg-clip-text text-transparent"
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              >
-                LORENZINI
-              </motion.span>
-            </h1>
-          </motion.div>
-
-          {/* Subtitle - Word by word reveal */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            className="mb-12 max-w-3xl"
-          >
-            <p className="text-2xl md:text-3xl text-gray-600 font-light leading-relaxed">
-              {subtitleWords[0].split(' ').map((word, i) => (
+        {/* Name */}
+        <h1>
+          {/* LORIS */}
+          <div className="overflow-hidden">
+            <div className="flex justify-center">
+              {firstName.split('').map((letter, index) => (
                 <motion.span
-                  key={i}
-                  variants={wordRevealVariants}
-                  custom={i}
-                  className="inline-block mr-2"
+                  key={index}
+                  custom={index}
+                  variants={prefersReducedMotion ? {} : letterVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="text-[17vw] sm:text-[14vw] md:text-[12vw] lg:text-[10vw] font-black tracking-[-0.04em] leading-[0.85] text-gray-900 dark:text-gray-100 inline-block"
                 >
-                  {word}
+                  {letter}
                 </motion.span>
               ))}
-              <br />
-              <span className="text-gray-500">
-                {subtitleWords[1].split(' ').map((word, i) => (
-                  <motion.span
-                    key={i}
-                    variants={wordRevealVariants}
-                    custom={i + subtitleWords[0].split(' ').length}
-                    className="inline-block mr-2"
-                  >
-                    {word}
-                  </motion.span>
-                ))}
-              </span>
-            </p>
-          </motion.div>
+            </div>
+          </div>
 
-          {/* CTA Button with magnetic effect */}
-          <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ 
-              duration: 0.8, 
-              delay: 1.2,
-              ease: [0.16, 1, 0.3, 1]
-            }}
+          {/* LORENZINI */}
+          <div className="overflow-hidden">
+            <div className="flex justify-center bg-gradient-to-r from-primary-blue via-primary-cyan to-primary-blue bg-clip-text">
+              {lastName.split('').map((letter, index) => (
+                <motion.span
+                  key={index}
+                  custom={index + firstName.length}
+                  variants={prefersReducedMotion ? {} : letterVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="text-[17vw] sm:text-[14vw] md:text-[12vw] lg:text-[10vw] font-black tracking-[-0.04em] leading-[0.85] text-transparent inline-block"
+                >
+                  {letter}
+                </motion.span>
+              ))}
+            </div>
+          </div>
+        </h1>
+
+        {/* Bottom info */}
+        <motion.div
+          initial={prefersReducedMotion ? {} : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
+        >
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+            </span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Disponible
+            </span>
+          </div>
+
+          <span className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-gray-700" />
+
+          <motion.button
+            onClick={scrollToProjects}
+            whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+            whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+            className="group flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 font-medium hover:text-primary-blue dark:hover:text-primary-cyan transition-colors"
           >
-            <GlassButton href="#projects" variant="primary">
-              Découvrir mes projets
-            </GlassButton>
-          </motion.div>
-        </div>
+            Voir les projets
+            <ArrowDownRight size={16} className="group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform" />
+          </motion.button>
+        </motion.div>
       </motion.div>
 
-      {/* Scroll Indicator */}
+      {/* Scroll indicator */}
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={prefersReducedMotion ? {} : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10"
+        transition={{ duration: 0.6, delay: 1.5 }}
+        className="absolute bottom-24 left-1/2 -translate-x-1/2"
       >
         <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-6 h-10 rounded-full border-2 border-gray-300 flex items-start justify-center p-2"
+          animate={prefersReducedMotion ? {} : { y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center gap-2"
         >
-          <motion.div
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-1 h-3 rounded-full bg-gray-400"
-          />
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-[0.2em] uppercase">
+            Scroll
+          </span>
+          <div className="w-px h-8 bg-gradient-to-b from-gray-300 dark:from-gray-600 to-transparent" />
         </motion.div>
       </motion.div>
     </section>

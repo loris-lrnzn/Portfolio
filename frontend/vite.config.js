@@ -22,7 +22,12 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
-        ws: false, // Désactiver WebSocket pour le proxy API
+        ws: false,
+      },
+      '/uploads': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
       }
     }
   }

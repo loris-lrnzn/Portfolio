@@ -7,9 +7,11 @@ use App\Entity\Project;
 use App\Service\AuthService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ApiController extends AbstractController
 {
@@ -17,15 +19,18 @@ class ApiController extends AbstractController
     public function getProjects(EntityManagerInterface $em): JsonResponse
     {
         $projects = $em->getRepository(Project::class)->findAll();
-        
+
         $data = array_map(function (Project $project) {
             return [
                 'id' => $project->getId(),
                 'title' => $project->getTitle(),
                 'description' => $project->getDescription(),
                 'technology_tags' => $project->getTechnologyTags(),
-                'image_url' => $project->getImageUrl(),
+                'images' => $project->getImages(),
+                'image_url' => $project->getImageUrl(), // Backward compatibility
                 'github_link' => $project->getGithubLink(),
+                'live_url' => $project->getLiveUrl(),
+                'year' => $project->getYear(),
             ];
         }, $projects);
 
@@ -36,7 +41,7 @@ class ApiController extends AbstractController
     public function getProject(int $id, EntityManagerInterface $em): JsonResponse
     {
         $project = $em->getRepository(Project::class)->find($id);
-        
+
         if (!$project) {
             return $this->json(['error' => 'Project not found'], 404);
         }
@@ -46,8 +51,11 @@ class ApiController extends AbstractController
             'title' => $project->getTitle(),
             'description' => $project->getDescription(),
             'technology_tags' => $project->getTechnologyTags(),
-            'image_url' => $project->getImageUrl(),
+            'images' => $project->getImages(),
+            'image_url' => $project->getImageUrl(), // Backward compatibility
             'github_link' => $project->getGithubLink(),
+            'live_url' => $project->getLiveUrl(),
+            'year' => $project->getYear(),
         ];
 
         return $this->json($data);
@@ -68,36 +76,64 @@ class ApiController extends AbstractController
                 'title' => 'E-Commerce Platform',
                 'description' => 'Plateforme e-commerce complète avec gestion de panier, paiement et administration. Interface moderne et responsive avec système de recommandations basé sur l\'IA.',
                 'technology_tags' => ['React', 'Node.js', 'MongoDB', 'Stripe API', 'Tailwind CSS'],
-                'image_url' => 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800',
-                'github_link' => 'https://github.com/example/ecommerce-platform'
+                'images' => [
+                    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200',
+                    'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200',
+                    'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1200'
+                ],
+                'github_link' => 'https://github.com/example/ecommerce-platform',
+                'live_url' => 'https://demo-ecommerce.example.com',
+                'year' => 2024
             ],
             [
                 'title' => 'Dashboard Analytics',
                 'description' => 'Tableau de bord analytique en temps réel avec visualisations interactives. Suivi des métriques clés, rapports personnalisables et export de données.',
                 'technology_tags' => ['Vue.js', 'Python', 'PostgreSQL', 'Chart.js', 'D3.js'],
-                'image_url' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800',
-                'github_link' => 'https://github.com/example/analytics-dashboard'
+                'images' => [
+                    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200',
+                    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200'
+                ],
+                'github_link' => 'https://github.com/example/analytics-dashboard',
+                'live_url' => null,
+                'year' => 2024
             ],
             [
                 'title' => 'API REST Microservices',
                 'description' => 'Architecture microservices scalable avec API REST, authentification JWT, gestion de cache Redis et déploiement Docker. Documentation Swagger complète.',
                 'technology_tags' => ['Symfony', 'Docker', 'Redis', 'JWT', 'Swagger'],
-                'image_url' => 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800',
-                'github_link' => 'https://github.com/example/microservices-api'
+                'images' => [
+                    'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200',
+                    'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=1200',
+                    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200'
+                ],
+                'github_link' => 'https://github.com/example/microservices-api',
+                'live_url' => null,
+                'year' => 2023
             ],
             [
                 'title' => 'Application Mobile React Native',
                 'description' => 'Application mobile cross-platform avec notifications push, géolocalisation et synchronisation offline. Design moderne avec animations fluides.',
                 'technology_tags' => ['React Native', 'Firebase', 'Redux', 'Expo', 'TypeScript'],
-                'image_url' => 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800',
-                'github_link' => 'https://github.com/example/react-native-app'
+                'images' => [
+                    'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1200',
+                    'https://images.unsplash.com/photo-1522125670776-3c7abb882bc2?w=1200'
+                ],
+                'github_link' => 'https://github.com/example/react-native-app',
+                'live_url' => 'https://apps.apple.com/example',
+                'year' => 2023
             ],
             [
                 'title' => 'Système de Gestion de Contenu',
                 'description' => 'CMS headless avec interface d\'administration intuitive. Support multi-utilisateurs, gestion des médias et API GraphQL pour le frontend.',
                 'technology_tags' => ['Next.js', 'Strapi', 'GraphQL', 'AWS S3', 'TypeScript'],
-                'image_url' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800',
-                'github_link' => 'https://github.com/example/cms-platform'
+                'images' => [
+                    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200',
+                    'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=1200',
+                    'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200'
+                ],
+                'github_link' => 'https://github.com/example/cms-platform',
+                'live_url' => null,
+                'year' => 2022
             ],
         ];
 
@@ -106,9 +142,11 @@ class ApiController extends AbstractController
             $project->setTitle($projectData['title']);
             $project->setDescription($projectData['description']);
             $project->setTechnologyTags($projectData['technology_tags']);
-            $project->setImageUrl($projectData['image_url']);
+            $project->setImages($projectData['images']);
             $project->setGithubLink($projectData['github_link']);
-            
+            $project->setLiveUrl($projectData['live_url'] ?? null);
+            $project->setYear($projectData['year']);
+
             $em->persist($project);
         }
 
@@ -140,8 +178,15 @@ class ApiController extends AbstractController
         $project->setTitle($data['title'] ?? '');
         $project->setDescription($data['description'] ?? '');
         $project->setTechnologyTags($data['technology_tags'] ?? []);
-        $project->setImageUrl($data['image_url'] ?? '');
+        // Support both 'images' array and legacy 'image_url' string
+        if (isset($data['images']) && is_array($data['images'])) {
+            $project->setImages($data['images']);
+        } elseif (isset($data['image_url'])) {
+            $project->setImageUrl($data['image_url']);
+        }
         $project->setGithubLink($data['github_link'] ?? '');
+        $project->setLiveUrl($data['live_url'] ?? null);
+        $project->setYear($data['year'] ?? null);
 
         $em->persist($project);
         $em->flush();
@@ -151,8 +196,11 @@ class ApiController extends AbstractController
             'title' => $project->getTitle(),
             'description' => $project->getDescription(),
             'technology_tags' => $project->getTechnologyTags(),
+            'images' => $project->getImages(),
             'image_url' => $project->getImageUrl(),
             'github_link' => $project->getGithubLink(),
+            'live_url' => $project->getLiveUrl(),
+            'year' => $project->getYear(),
         ], 201);
     }
 
@@ -186,11 +234,20 @@ class ApiController extends AbstractController
         if (isset($data['technology_tags'])) {
             $project->setTechnologyTags($data['technology_tags']);
         }
-        if (isset($data['image_url'])) {
+        // Support both 'images' array and legacy 'image_url' string
+        if (isset($data['images']) && is_array($data['images'])) {
+            $project->setImages($data['images']);
+        } elseif (isset($data['image_url'])) {
             $project->setImageUrl($data['image_url']);
         }
         if (isset($data['github_link'])) {
             $project->setGithubLink($data['github_link']);
+        }
+        if (array_key_exists('live_url', $data)) {
+            $project->setLiveUrl($data['live_url']);
+        }
+        if (isset($data['year'])) {
+            $project->setYear($data['year']);
         }
 
         $em->flush();
@@ -200,8 +257,11 @@ class ApiController extends AbstractController
             'title' => $project->getTitle(),
             'description' => $project->getDescription(),
             'technology_tags' => $project->getTechnologyTags(),
+            'images' => $project->getImages(),
             'image_url' => $project->getImageUrl(),
             'github_link' => $project->getGithubLink(),
+            'live_url' => $project->getLiveUrl(),
+            'year' => $project->getYear(),
         ]);
     }
 
@@ -305,5 +365,87 @@ class ApiController extends AbstractController
         $em->flush();
 
         return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/admin/messages/{id}', name: 'api_admin_messages_delete', methods: ['DELETE'])]
+    public function deleteMessage(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $message = $em->getRepository(Message::class)->find($id);
+        if (!$message) {
+            return $this->json(['error' => 'Message not found'], 404);
+        }
+
+        $em->remove($message);
+        $em->flush();
+
+        return $this->json(['message' => 'Message deleted successfully']);
+    }
+
+    #[Route('/api/admin/upload', name: 'api_admin_upload', methods: ['POST'])]
+    public function uploadImage(Request $request, SluggerInterface $slugger): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $file = $request->files->get('image');
+        if (!$file) {
+            return $this->json(['error' => 'No file uploaded'], 400);
+        }
+
+        // Vérifier le type de fichier
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+            return $this->json(['error' => 'Invalid file type. Allowed: JPG, PNG, GIF, WebP'], 400);
+        }
+
+        // Vérifier la taille (max 5MB)
+        if ($file->getSize() > 5 * 1024 * 1024) {
+            return $this->json(['error' => 'File too large. Max 5MB'], 400);
+        }
+
+        // Générer un nom de fichier unique
+        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeFilename = $slugger->slug($originalFilename);
+        $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+
+        // Créer le dossier uploads s'il n'existe pas
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        try {
+            $file->move($uploadDir, $newFilename);
+        } catch (FileException $e) {
+            return $this->json(['error' => 'Failed to upload file'], 500);
+        }
+
+        // Retourner l'URL de l'image
+        $imageUrl = '/uploads/' . $newFilename;
+
+        return $this->json([
+            'success' => true,
+            'url' => $imageUrl,
+            'filename' => $newFilename
+        ]);
     }
 }

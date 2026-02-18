@@ -1,17 +1,24 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
-import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { useMemo } from 'react'
+import useReducedMotion from '../hooks/useReducedMotion'
 
-// eslint-disable-next-line react/prop-types
 const FilterBar = ({ technologies = [], selectedFilters = [], onFilterChange }) => {
-  const [searchQuery, setSearchQuery] = useState('')
-  // technologies est déjà un tableau plat depuis App.jsx (flatMap)
-  // S'assurer que c'est bien un tableau et extraire les valeurs uniques
-  const allTechnologies = [...new Set(Array.isArray(technologies) ? technologies : [])].filter(Boolean)
-  
-  const filteredTechnologies = allTechnologies.filter(tech =>
-    tech.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const prefersReducedMotion = useReducedMotion()
+
+  // Get unique technologies sorted by count
+  const uniqueTechs = useMemo(() => {
+    const counts = {}
+    const techs = Array.isArray(technologies) ? technologies : []
+    techs.forEach(tech => {
+      if (tech) {
+        counts[tech] = (counts[tech] || 0) + 1
+      }
+    })
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8) // Show top 8 technologies
+      .map(([name]) => name)
+  }, [technologies])
 
   const handleToggleFilter = (tech) => {
     if (selectedFilters.includes(tech)) {
@@ -21,117 +28,69 @@ const FilterBar = ({ technologies = [], selectedFilters = [], onFilterChange }) 
     }
   }
 
-  const handleClearAll = () => {
-    onFilterChange([])
-    setSearchQuery('')
+  const getAnimationProps = (props) => {
+    if (prefersReducedMotion) return {}
+    return props
   }
+
+  if (uniqueTechs.length === 0) return null
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className="mb-20"
+      {...getAnimationProps({
+        initial: { opacity: 0, y: 20 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true },
+        transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+      })}
+      className="flex flex-wrap items-center justify-center gap-2"
+      role="group"
+      aria-label="Filtrer par technologie"
     >
-      {/* Ultra Minimal Filter - Editorial Style */}
-      <div className="space-y-6">
-        {/* Search Input - Discret */}
-        <div className="relative max-w-md mx-auto">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher une technologie..."
-            className="w-full px-0 py-2 bg-transparent border-0 border-b border-gray-200 focus:border-[#2563EB] focus:outline-none text-sm text-gray-600 placeholder-gray-400 font-light tracking-wide transition-colors duration-300"
-          />
-        </div>
+      {/* All button */}
+      <motion.button
+        onClick={() => onFilterChange([])}
+        {...getAnimationProps({
+          whileHover: { scale: 1.05 },
+          whileTap: { scale: 0.95 }
+        })}
+        className={`
+          px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+          ${selectedFilters.length === 0
+            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+            : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+          }
+        `}
+      >
+        Tous
+      </motion.button>
 
-        {/* Filter Tags - Ultra Minimal */}
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
-          <AnimatePresence mode="popLayout">
-            {filteredTechnologies.length > 0 ? (
-              filteredTechnologies.map((tech) => {
-                const isSelected = selectedFilters.includes(tech)
-                return (
-                  <motion.button
-                    key={tech}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    whileHover={{ 
-                      scale: 1.02,
-                      color: isSelected ? undefined : '#2563EB'
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
-                    onClick={() => handleToggleFilter(tech)}
-                    className={`relative text-xs font-extralight tracking-[0.2em] uppercase transition-colors duration-200 ${
-                      isSelected
-                        ? 'text-[#2563EB]'
-                        : 'text-gray-400 hover:text-gray-600'
-                    }`}
-                  >
-                    {tech}
-                    {/* Underline effect when selected */}
-                    {isSelected && (
-                      <motion.div
-                        layoutId="filter-underline"
-                        className="absolute -bottom-1 left-0 right-0 h-[1px] bg-[#2563EB]"
-                        initial={false}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      />
-                    )}
-                  </motion.button>
-                )
-              })
-            ) : (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xs text-gray-400 font-light tracking-wide"
-              >
-                Aucune technologie trouvée
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
+      {/* Separator */}
+      <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
 
-        {/* Clear Button - Ultra Discret */}
-        {selectedFilters.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex justify-center pt-2"
+      {/* Technology pills */}
+      {uniqueTechs.map((tech) => {
+        const isSelected = selectedFilters.includes(tech)
+        return (
+          <motion.button
+            key={tech}
+            onClick={() => handleToggleFilter(tech)}
+            {...getAnimationProps({
+              whileHover: { scale: 1.05 },
+              whileTap: { scale: 0.95 }
+            })}
+            className={`
+              px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+              ${isSelected
+                ? 'bg-primary-blue text-white'
+                : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+              }
+            `}
           >
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
-              onClick={handleClearAll}
-              className="flex items-center gap-2 text-[10px] text-gray-400 hover:text-gray-600 font-extralight tracking-[0.3em] uppercase transition-colors duration-200"
-            >
-              <X size={10} />
-              Réinitialiser
-            </motion.button>
-          </motion.div>
-        )}
-
-        {/* Active Filters Count - Subtle */}
-        {selectedFilters.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center"
-          >
-            <span className="text-[10px] text-gray-400 font-extralight tracking-[0.3em] uppercase">
-              {selectedFilters.length} filtre{selectedFilters.length > 1 ? 's' : ''} actif{selectedFilters.length > 1 ? 's' : ''}
-            </span>
-          </motion.div>
-        )}
-      </div>
+            {tech}
+          </motion.button>
+        )
+      })}
     </motion.div>
   )
 }

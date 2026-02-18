@@ -23,11 +23,17 @@ class Project
     #[ORM\Column(type: Types::JSON)]
     private array $technologyTags = [];
 
-    #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
-    private ?string $imageUrl = null;
+    #[ORM\Column(type: Types::JSON)]
+    private array $images = [];
 
     #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
     private ?string $githubLink = null;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $year = null;
+
+    #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
+    private ?string $liveUrl = null;
 
     public function getId(): ?int
     {
@@ -67,14 +73,29 @@ class Project
         return $this;
     }
 
-    public function getImageUrl(): ?string
+    public function getImages(): array
     {
-        return $this->imageUrl;
+        return $this->images;
     }
 
+    public function setImages(array $images): self
+    {
+        $this->images = $images;
+        return $this;
+    }
+
+    // Backward compatibility - returns first image
+    public function getImageUrl(): ?string
+    {
+        return $this->images[0] ?? null;
+    }
+
+    // Backward compatibility - sets single image as array
     public function setImageUrl(?string $imageUrl): self
     {
-        $this->imageUrl = $imageUrl;
+        if ($imageUrl) {
+            $this->images = [$imageUrl];
+        }
         return $this;
     }
 
@@ -86,6 +107,28 @@ class Project
     public function setGithubLink(?string $githubLink): self
     {
         $this->githubLink = $githubLink;
+        return $this;
+    }
+
+    public function getYear(): ?int
+    {
+        return $this->year;
+    }
+
+    public function setYear(?int $year): self
+    {
+        $this->year = $year;
+        return $this;
+    }
+
+    public function getLiveUrl(): ?string
+    {
+        return $this->liveUrl;
+    }
+
+    public function setLiveUrl(?string $liveUrl): self
+    {
+        $this->liveUrl = $liveUrl;
         return $this;
     }
 }

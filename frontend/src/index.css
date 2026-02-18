@@ -2,9 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hide default cursor everywhere when custom cursor is active */
-* {
-  cursor: none !important;
+/* Hide default cursor on desktop only when custom cursor is active */
+@media (pointer: fine) {
+  *:not(.default-cursor):not(.default-cursor *) {
+    cursor: none !important;
+  }
+
+  /* Restore cursors for admin pages */
+  .default-cursor,
+  .default-cursor * {
+    cursor: default !important;
+  }
+
+  /* Clickable elements - pointer (including children) */
+  .default-cursor a,
+  .default-cursor a *,
+  .default-cursor button,
+  .default-cursor button *,
+  .default-cursor [role="button"],
+  .default-cursor [role="button"] *,
+  .default-cursor input[type="submit"],
+  .default-cursor input[type="checkbox"],
+  .default-cursor input[type="radio"],
+  .default-cursor input[type="file"],
+  .default-cursor select,
+  .default-cursor label[for],
+  .default-cursor .cursor-pointer,
+  .default-cursor .cursor-pointer * {
+    cursor: pointer !important;
+  }
+
+  /* Text inputs - text cursor */
+  .default-cursor input:not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  .default-cursor textarea {
+    cursor: text !important;
+  }
+
+  /* Draggable elements - grab/move */
+  .default-cursor [draggable="true"],
+  .default-cursor .cursor-move,
+  .default-cursor .cursor-grab {
+    cursor: grab !important;
+  }
+
+  .default-cursor [draggable="true"]:active,
+  .default-cursor .cursor-move:active,
+  .default-cursor .cursor-grab:active {
+    cursor: grabbing !important;
+  }
+}
+
+/* Show default cursor on touch devices */
+@media (pointer: coarse) {
+  * {
+    cursor: auto !important;
+  }
 }
 
 @layer base {
@@ -13,28 +65,76 @@
   }
 
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-white dark:bg-dark-bg text-gray-900 dark:text-gray-100;
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    position: relative; /* Required for Framer Motion scroll calculations */
+    position: relative;
   }
 
   #root {
     width: 100%;
     min-height: 100vh;
-    position: relative; /* Required for Framer Motion scroll calculations */
+    position: relative;
   }
 
   html {
     scroll-behavior: smooth;
-    position: relative; /* Required for Framer Motion scroll calculations */
+    position: relative;
+  }
+
+  /* Respect reduced motion preference for smooth scroll */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 }
 
+/* ===== FOCUS STATES - Accessibility ===== */
+@layer base {
+  /* Global focus visible styles */
+  *:focus {
+    outline: none;
+  }
+
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary-blue;
+    outline-style: solid;
+  }
+
+  /* Button and link focus styles */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    @apply ring-2 ring-primary-blue ring-offset-2 dark:ring-offset-dark-bg;
+    outline: none;
+  }
+
+  /* Input focus styles */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply ring-2 ring-primary-blue border-primary-blue;
+    outline: none;
+  }
+}
+
+/* ===== SKIP TO CONTENT - Accessibility ===== */
+.skip-to-content {
+  @apply fixed top-0 left-0 z-[10000] px-4 py-2 bg-primary-blue text-white font-medium;
+  transform: translateY(-100%);
+  transition: transform 0.2s ease-in-out;
+}
+
+.skip-to-content:focus {
+  transform: translateY(0);
+}
+
+/* ===== GLASS EFFECTS ===== */
 @layer utilities {
-  /* Real Glass Effect - Exact specifications */
+  /* Light mode glass effects */
   .real-glass {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px) saturate(180%);
@@ -50,7 +150,7 @@
     border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
   }
-  
+
   .glass-strong {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px) saturate(180%);
@@ -83,11 +183,10 @@
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
   }
 
-  /* Ultra glass effect for chatbot - Works on both light and dark */
   .glass-chat {
     background: rgba(255, 255, 255, 0.85);
     border-radius: 16px;
-    box-shadow: 
+    box-shadow:
       0 4px 30px rgba(0, 0, 0, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(12px) saturate(180%);
@@ -95,7 +194,47 @@
     border: 1px solid rgba(255, 255, 255, 0.7);
   }
 
-  /* Awwwards style animations */
+  /* Dark mode glass effects */
+  .dark .glass,
+  .dark .real-glass {
+    background: rgba(30, 30, 30, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .glass-strong {
+    background: rgba(30, 30, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  .dark .glass-white {
+    background: rgba(30, 30, 30, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .dark .glass-light {
+    background: rgba(30, 30, 30, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .dark .glass-card {
+    background: rgba(30, 30, 30, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .glass-chat {
+    background: rgba(30, 30, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 4px 30px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* ===== ANIMATIONS ===== */
   @keyframes float {
     0%, 100% {
       transform: translateY(0px);
@@ -127,13 +266,33 @@
   .perspective-1000 {
     perspective: 1000px;
   }
+
+  /* ===== REDUCED MOTION ===== */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float {
+      animation: none;
+    }
+
+    .gradient-animate {
+      animation: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
-/* Smooth scrolling */
+/* ===== SCROLLBAR ===== */
 @layer base {
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-color: rgba(100, 100, 100, 0.3) transparent;
   }
 
   *::-webkit-scrollbar {
@@ -145,11 +304,37 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(100, 100, 100, 0.3);
     border-radius: 4px;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(100, 100, 100, 0.5);
   }
+
+  /* Dark mode scrollbar */
+  .dark * {
+    scrollbar-color: rgba(200, 200, 200, 0.2) transparent;
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: rgba(200, 200, 200, 0.2);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(200, 200, 200, 0.4);
+  }
+}
+
+/* ===== SCREEN READER ONLY ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

@@ -1,123 +1,239 @@
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { Code, Mail, Github, Instagram } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Menu, X, Github, Linkedin, Mail } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import ThemeToggle from './ThemeToggle'
+import useReducedMotion from '../hooks/useReducedMotion'
 
-const Header = () => {
-  const { scrollY } = useScroll()
+const Header = ({ darkHero = false }) => {
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { isAuthenticated } = useAuth()
-  
-  const headerOpacity = useTransform(scrollY, [0, 100], [0.95, 1])
-  const headerBlur = useTransform(scrollY, [0, 100], [0, 20])
-  const headerScale = useTransform(scrollY, [0, 100], [1, 0.98])
+  const prefersReducedMotion = useReducedMotion()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isHomePage = location.pathname === '/'
+
+  // On dark hero pages, use light text when not scrolled
+  const useLightText = darkHero && !isScrolled
 
   useEffect(() => {
-    const unsubscribe = scrollY.on('change', (latest) => {
-      setIsScrolled(latest > 50)
-    })
-    return () => unsubscribe()
-  }, [scrollY])
+    const handleScroll = () => setIsScrolled(window.scrollY > 50)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setIsMobileMenuOpen(false)
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [isMobileMenuOpen])
+
+  const scrollToSection = useCallback((sectionId) => {
+    setIsMobileMenuOpen(false)
+
+    if (!isHomePage) {
+      // Navigate to homepage with hash
+      navigate(`/#${sectionId}`)
+      return
+    }
+
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const offset = 80
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
+      window.scrollTo({
+        top: elementPosition - offset,
+        behavior: prefersReducedMotion ? 'auto' : 'smooth'
+      })
+    }
+  }, [prefersReducedMotion, isHomePage, navigate])
+
+  const navLinks = [
+    { label: 'À propos', id: 'about' },
+    { label: 'Services', id: 'services' },
+    { label: 'Projets', id: 'projects' },
+  ]
+
+  const socialLinks = [
+    { href: 'https://github.com/loris-lrnzn', icon: Github, label: 'GitHub' },
+    { href: 'https://www.linkedin.com/in/loris-lorenzini/', icon: Linkedin, label: 'LinkedIn' },
+    { href: 'mailto:lorislorenzini@outlook.com', icon: Mail, label: 'Email' },
+  ]
+
+  const getAnimationProps = (props) => {
+    if (prefersReducedMotion) return {}
+    return props
+  }
 
   return (
-    <motion.header
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      style={{
-        opacity: headerOpacity,
-        backdropFilter: `blur(${headerBlur}px)`,
-        scale: headerScale,
-      }}
-      className={`fixed top-0 left-0 right-0 z-50 glass border-b transition-colors duration-300 ${
-        isScrolled ? 'border-gray-200/50' : 'border-gray-200/30'
-      }`}
-    >
-      <div className="container mx-auto px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link to="/">
+    <>
+      <motion.header
+        {...getAnimationProps({
+          initial: { opacity: 0, y: -20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.6 }
+        })}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? 'bg-white/80 dark:bg-dark-bg/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50'
+            : 'bg-transparent'
+        }`}
+        role="banner"
+      >
+        <div className="container mx-auto px-4 md:px-8 max-w-6xl">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Logo - fixed width for centering */}
+            <div className="flex-1 flex items-center">
+              <Link to="/" className={`font-semibold text-lg tracking-tight hover:opacity-70 transition-all ${
+                useLightText ? 'text-white' : 'text-gray-900 dark:text-gray-100'
+              }`}>
+                LL
+              </Link>
+            </div>
+
+            {/* Desktop Navigation - truly centered */}
+            <nav className="hidden md:flex items-center justify-center gap-8" role="navigation" aria-label="Navigation principale">
+              {navLinks.map((link) => (
+                <button
+                  key={link.id}
+                  onClick={() => scrollToSection(link.id)}
+                  className={`text-sm font-medium transition-colors ${
+                    useLightText
+                      ? 'text-white/80 hover:text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              ))}
+              {isAuthenticated && (
+                <Link
+                  to="/admin"
+                  className={`text-sm font-medium transition-colors ${
+                    useLightText
+                      ? 'text-white/80 hover:text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  Admin
+                </Link>
+              )}
+            </nav>
+
+            {/* Right side - fixed width for centering */}
+            <div className="flex-1 flex items-center justify-end gap-2">
+              {/* Social Links - Desktop */}
+              <div className="hidden md:flex items-center gap-1">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target={social.href.startsWith('mailto:') ? undefined : '_blank'}
+                    rel={social.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+                    className={`w-9 h-9 flex items-center justify-center transition-colors ${
+                      useLightText
+                        ? 'text-white/70 hover:text-white'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                    aria-label={social.label}
+                  >
+                    <social.icon size={18} />
+                  </a>
+                ))}
+              </div>
+
+              <ThemeToggle darkHero={useLightText} />
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className={`md:hidden w-10 h-10 flex items-center justify-center transition-colors ${
+                  useLightText
+                    ? 'text-white/80 hover:text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                }`}
+                aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                aria-expanded={isMobileMenuOpen}
+              >
+                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, type: 'tween', duration: 0.2, ease: 'easeOut' }}
-              className="flex items-center gap-3 cursor-pointer group"
-              whileHover={{ scale: 1.02 }}
-            >
-              <div className="w-10 h-10 rounded-xl glass-strong flex items-center justify-center group-hover:glass-strong transition-all duration-300">
-                <Code className="text-gray-900" size={20} />
-              </div>
-              <span className="text-gray-900 font-semibold text-xl group-hover:text-[#2563EB] transition-colors duration-300">Portfolio</span>
-            </motion.div>
-          </Link>
-
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <motion.nav
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+              className="fixed top-16 left-0 right-0 bg-white dark:bg-dark-bg border-b border-gray-200 dark:border-gray-800 z-50 md:hidden"
+              role="navigation"
+              aria-label="Menu mobile"
             >
-              <Link
-                to="/"
-                className="px-6 py-2.5 rounded-full text-gray-700 hover:text-gray-900 hover:bg-white/60 transition-all duration-300 text-sm font-medium relative group block"
-              >
-                Accueil
-                <motion.span
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#2563EB] rounded-full"
-                  whileHover={{ width: '60%' }}
-                  transition={{ duration: 0.3 }}
-                />
-              </Link>
-            </motion.div>
-            {isAuthenticated && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <Link
-                  to="/admin"
-                  className="px-6 py-2.5 rounded-full text-gray-700 hover:text-gray-900 hover:bg-white/60 transition-all duration-300 text-sm font-medium relative group block"
-                >
-                  Admin
-                  <motion.span
-                    className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#2563EB] rounded-full"
-                    whileHover={{ width: '60%' }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </Link>
-              </motion.div>
-            )}
-          </nav>
-
-          {/* Social Links */}
-          <div className="flex items-center gap-2">
-            {[
-              { href: 'https://github.com/loris-lrnzn', icon: Github },
-              { href: 'https://instagram.com/loris_lrnzn', icon: Instagram },
-              { href: 'mailto:lorislorenzini@outlook.com', icon: Mail }
-            ].map((social, index) => (
-              <motion.a
-                key={social.href}
-                href={social.href}
-                target={social.href.startsWith('mailto:') ? undefined : '_blank'}
-                rel={social.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ delay: 0.5 + index * 0.1, type: 'tween', duration: 0.2, ease: 'easeOut' }}
-                className="w-10 h-10 rounded-full glass-light flex items-center justify-center text-gray-700 hover:text-gray-900 hover:glass transition-colors duration-200 cursor-pointer"
-              >
-                <social.icon size={18} />
-              </motion.a>
-            ))}
-          </div>
-        </div>
-      </div>
-    </motion.header>
+              <div className="container mx-auto px-4 py-6">
+                <div className="flex flex-col gap-4">
+                  {navLinks.map((link) => (
+                    <button
+                      key={link.id}
+                      onClick={() => scrollToSection(link.id)}
+                      className="text-lg text-gray-900 dark:text-gray-100 font-medium py-2 text-left hover:text-primary-blue transition-colors"
+                    >
+                      {link.label}
+                    </button>
+                  ))}
+                  {isAuthenticated && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-lg text-gray-900 dark:text-gray-100 font-medium py-2 hover:text-primary-blue transition-colors"
+                    >
+                      Admin
+                    </Link>
+                  )}
+                </div>
+                {/* Social Links - Mobile */}
+                <div className="flex items-center gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target={social.href.startsWith('mailto:') ? undefined : '_blank'}
+                      rel={social.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+                      className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                      aria-label={social.label}
+                    >
+                      <social.icon size={20} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 
