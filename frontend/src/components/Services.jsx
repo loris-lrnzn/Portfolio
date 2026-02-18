@@ -7,15 +7,15 @@ const Services = () => {
   const services = [
     {
       title: 'Applications Web',
-      description: 'Sites vitrines, SaaS, e-commerce. Des applications modernes, rapides et scalables.',
+      description: 'Applications Full Stack avec React ou Vue.js en front et Symfony en back. Des solutions modernes, rapides et scalables.',
     },
     {
       title: 'API & Backend',
-      description: 'Architectures robustes, APIs RESTful, microservices. Sécurisé et performant.',
+      description: 'Conception d\'APIs RESTful avec Symfony, Doctrine ORM et API Platform. Architecture MVC, sécurisée et performante.',
     },
     {
-      title: 'Conseil Technique',
-      description: 'Choix technologiques, audit de code, optimisation. Un regard expert sur vos projets.',
+      title: 'Intégration & UI/UX',
+      description: 'Création de maquettes sur Figma et intégration responsive avec Tailwind CSS. Des interfaces soignées et accessibles.',
     },
   ]
 

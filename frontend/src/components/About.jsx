@@ -117,8 +117,8 @@ const About = () => {
               </span>
             </div>
             <p className="text-lg text-gray-600 dark:text-gray-400 font-light leading-relaxed">
-              Développeur web depuis plus de 3 ans, basé en France.
-              Je travaille en freelance et avec des agences sur des projets ambitieux.
+              Étudiant en dernière année de B.U.T. MMI, spécialisé en Développement Web à l'IUT de Saint-Dié-des-Vosges.
+              Je possède une double expertise Back-end (Symfony, PHP, API REST) et Front-end (React, Vue.js).
             </p>
           </motion.div>
 
@@ -138,8 +138,8 @@ const About = () => {
               </span>
             </div>
             <p className="text-lg text-gray-600 dark:text-gray-400 font-light leading-relaxed">
-              Qualité avant quantité. Code propre, pixels parfaits.
-              Des apps rapides, accessibles, et agréables à utiliser.
+              Passionné par la conception d'applications web métier, je combine rigueur technique et créativité.
+              Gestion de projet, travail en équipe et adaptabilité sont mes points forts.
             </p>
           </motion.div>
         </div>

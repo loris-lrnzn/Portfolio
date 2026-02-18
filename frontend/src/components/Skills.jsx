@@ -11,9 +11,10 @@ const Skills = () => {
 
   // All skills in a flowing layout
   const allSkills = [
-    'React', 'Vue.js', 'TypeScript', 'Node.js', 'Symfony',
-    'PHP', 'Tailwind CSS', 'MySQL', 'MongoDB', 'Docker',
-    'Git', 'Figma', 'REST API', 'GraphQL', 'PostgreSQL'
+    'PHP 8', 'Symfony', 'React', 'Vue.js 3', 'TypeScript',
+    'JavaScript ES6+', 'Tailwind CSS', 'HTML5', 'CSS3', 'MySQL',
+    'Doctrine ORM', 'API REST', 'API Platform', 'Git/GitHub', 'Docker',
+    'Figma', 'VS Code', 'WordPress'
   ]
 
   return (
