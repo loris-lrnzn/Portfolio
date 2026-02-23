@@ -4,9 +4,9 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { useNavigate, Link } from 'react-router-dom'
 import {
-  Plus, Edit2, Trash2, LogOut, X, Mail, Check,
-  Search, Filter, ExternalLink, Reply, FolderOpen,
-  MessageSquare, Calendar, Image as ImageIcon, AlertTriangle
+  Plus, Edit2, Trash2, LogOut, X, Check,
+  Search, ExternalLink, FolderOpen,
+  MessageSquare, Calendar, Image as ImageIcon, AlertTriangle, Bot
 } from 'lucide-react'
 import axios from 'axios'
 import ScrollProgress from '../components/ScrollProgress'
@@ -24,7 +24,7 @@ const Admin = () => {
   // State
   const [activeTab, setActiveTab] = useState('projects')
   const [projects, setProjects] = useState([])
-  const [messages, setMessages] = useState([])
+  const [chatLogs, setChatLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -87,11 +87,9 @@ const Admin = () => {
     return result
   }, [projects, searchQuery, yearFilter, sortBy])
 
-  const unreadMessages = useMemo(() => messages.filter(m => !m.isRead).length, [messages])
-
   useEffect(() => {
     fetchProjects()
-    fetchMessages()
+    fetchChatLogs()
   }, [])
 
   const fetchProjects = async () => {
@@ -107,12 +105,12 @@ const Admin = () => {
     }
   }
 
-  const fetchMessages = async () => {
+  const fetchChatLogs = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/messages`)
-      setMessages(response.data)
+      const response = await axios.get(`${API_URL}/admin/chat-logs`)
+      setChatLogs(response.data)
     } catch (error) {
-      console.error('Error fetching messages:', error)
+      console.error('Error fetching chat logs:', error)
     }
   }
 
@@ -210,10 +208,10 @@ const Admin = () => {
         await axios.delete(`${API_URL}/admin/projects/${deleteTarget.id}`)
         await fetchProjects()
         toast.success('Projet supprimé')
-      } else if (deleteTarget.type === 'message') {
-        await axios.delete(`${API_URL}/admin/messages/${deleteTarget.id}`)
-        await fetchMessages()
-        toast.success('Message supprimé')
+      } else if (deleteTarget.type === 'chatlog') {
+        await axios.delete(`${API_URL}/admin/chat-logs/${deleteTarget.id}`)
+        await fetchChatLogs()
+        toast.success('Conversation supprimée')
       }
     } catch (error) {
       console.error('Error deleting:', error)
@@ -221,17 +219,6 @@ const Admin = () => {
     } finally {
       setShowDeleteModal(false)
       setDeleteTarget(null)
-    }
-  }
-
-  const handleMarkAsRead = async (id) => {
-    try {
-      await axios.patch(`${API_URL}/admin/messages/${id}/read`)
-      await fetchMessages()
-      toast.success('Message marqué comme lu')
-    } catch (error) {
-      console.error('Error marking message as read:', error)
-      toast.error('Erreur')
     }
   }
 
@@ -288,7 +275,7 @@ const Admin = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+          className="grid grid-cols-3 gap-4 mb-8"
         >
           <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-3">
@@ -304,22 +291,11 @@ const Admin = () => {
           <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/20">
-                <MessageSquare size={20} className="text-green-600 dark:text-green-400" />
+                <Bot size={20} className="text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{messages.length}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Messages</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-900/20">
-                <Mail size={20} className="text-orange-600 dark:text-orange-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{unreadMessages}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Non lus</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{chatLogs.length}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Conversations</p>
               </div>
             </div>
           </div>
@@ -354,21 +330,21 @@ const Admin = () => {
             Projets
           </button>
           <button
-            onClick={() => setActiveTab('messages')}
+            onClick={() => setActiveTab('conversations')}
             className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
-              activeTab === 'messages'
+              activeTab === 'conversations'
                 ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            Messages
-            {unreadMessages > 0 && (
+            Conversations
+            {chatLogs.length > 0 && (
               <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                activeTab === 'messages'
+                activeTab === 'conversations'
                   ? 'bg-white/20 dark:bg-gray-900/20'
-                  : 'bg-orange-500 text-white'
+                  : 'bg-green-500 text-white'
               }`}>
-                {unreadMessages}
+                {chatLogs.length}
               </span>
             )}
           </button>
@@ -519,93 +495,69 @@ const Admin = () => {
           </>
         )}
 
-        {/* Messages Tab */}
-        {activeTab === 'messages' && (
+        {/* Conversations Tab */}
+        {activeTab === 'conversations' && (
           <div className="space-y-3">
-            {messages.length === 0 ? (
+            {chatLogs.length === 0 ? (
               <div className="flex items-center justify-center py-32">
                 <div className="text-center">
-                  <Mail size={48} className="text-gray-300 dark:text-gray-700 mx-auto mb-4" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Aucun message</p>
+                  <Bot size={48} className="text-gray-300 dark:text-gray-700 mx-auto mb-4" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Aucune conversation</p>
                 </div>
               </div>
             ) : (
               <AnimatePresence>
-                {messages.map((msg, index) => (
+                {chatLogs.map((log, index) => (
                   <motion.div
-                    key={msg.id}
+                    key={log.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ delay: index * 0.03 }}
-                    className={`bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800 ${
-                      msg.isRead ? 'opacity-60' : ''
-                    }`}
+                    className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800"
                   >
                     <div className="flex items-start gap-4">
-                      {/* Avatar */}
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        msg.isRead
-                          ? 'bg-gray-100 dark:bg-gray-700'
-                          : 'bg-orange-100 dark:bg-orange-900/30'
-                      }`}>
-                        <Mail size={18} className={msg.isRead ? 'text-gray-400' : 'text-orange-500'} />
-                      </div>
+                      <div className="flex-1 min-w-0 space-y-3">
+                        {/* Date */}
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                          {new Date(log.createdAt).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {msg.fromEmail || 'Anonyme'}
-                          </p>
-                          {!msg.isRead && (
-                            <span className="px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-medium">
-                              Nouveau
-                            </span>
-                          )}
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
-                            {new Date(msg.createdAt).toLocaleDateString('fr-FR', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                        {/* Question */}
+                        <div className="flex items-start gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-medium flex-shrink-0 mt-0.5">
+                            Visiteur
                           </span>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {log.question}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                          {msg.message}
-                        </p>
+
+                        {/* Answer */}
+                        <div className="flex items-start gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-medium flex-shrink-0 mt-0.5">
+                            Bot
+                          </span>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {log.answer}
+                          </p>
+                        </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {msg.fromEmail && (
-                          <a
-                            href={`mailto:${msg.fromEmail}?subject=Re: Message depuis votre portfolio`}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            title="Répondre"
-                          >
-                            <Reply size={16} className="text-gray-500 dark:text-gray-400" />
-                          </a>
-                        )}
-                        {!msg.isRead && (
-                          <button
-                            onClick={() => handleMarkAsRead(msg.id)}
-                            className="p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                            title="Marquer comme lu"
-                          >
-                            <Check size={16} className="text-green-600 dark:text-green-400" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDeleteClick('message', msg.id, 'ce message')}
-                          className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                          title="Supprimer"
-                        >
-                          <Trash2 size={16} className="text-red-500 dark:text-red-400" />
-                        </button>
-                      </div>
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDeleteClick('chatlog', log.id, 'cette conversation')}
+                        className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
+                        title="Supprimer"
+                      >
+                        <Trash2 size={16} className="text-red-500 dark:text-red-400" />
+                      </button>
                     </div>
                   </motion.div>
                 ))}

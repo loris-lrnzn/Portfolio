@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, Send, X, Sparkles } from 'lucide-react'
+import { MessageCircle, Send, X, Sparkles, ArrowRight } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 const ChatInput = () => {
@@ -76,21 +76,18 @@ const ChatInput = () => {
       const data = await res.json().catch(() => ({}))
 
       if (res.ok && data.reply) {
-        setMessages(prev => [...prev, { type: 'assistant', content: data.reply }])
+        setMessages(prev => [...prev, {
+          type: 'assistant',
+          content: data.reply,
+          action: data.action || null
+        }])
 
-        // Handle actions
-        if (data.action) {
-          const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth'
-          if (data.action.type === 'anchor') {
-            if (location.pathname !== '/') navigate('/')
-            setTimeout(() => {
-              const el = document.getElementById(data.action.id)
-              if (el) el.scrollIntoView({ behavior: scrollBehavior, block: 'start' })
-            }, 400)
-          } else if (data.action.type === 'project') {
-            navigate(`/project/${data.action.id}`)
-          }
-        }
+        // Save chat log
+        fetch('/api/chat-logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, answer: data.reply })
+        }).catch(() => {})
       } else {
         setMessages(prev => [...prev, {
           type: 'assistant',
@@ -108,6 +105,22 @@ const ChatInput = () => {
       setIsLoading(false)
     }
   }, [inputValue, isLoading, location.pathname, navigate, prefersReducedMotion])
+
+  const handleAction = useCallback((action) => {
+    if (!action) return
+    const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth'
+    if (action.type === 'anchor') {
+      setIsOpen(false)
+      if (location.pathname !== '/') navigate('/')
+      setTimeout(() => {
+        const el = document.getElementById(action.id)
+        if (el) el.scrollIntoView({ behavior: scrollBehavior, block: 'start' })
+      }, 400)
+    } else if (action.type === 'project') {
+      setIsOpen(false)
+      navigate(`/project/${action.id}`)
+    }
+  }, [location.pathname, navigate, prefersReducedMotion])
 
   const getAnimationProps = (props) => {
     if (prefersReducedMotion) return {}
@@ -190,6 +203,15 @@ const ChatInput = () => {
                         }`}
                       >
                         <p className="leading-relaxed">{msg.content}</p>
+                        {msg.action && (
+                          <button
+                            onClick={() => handleAction(msg.action)}
+                            className="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary-blue dark:text-primary-cyan hover:underline"
+                          >
+                            {msg.action.type === 'project' ? 'Voir le projet' : 'Voir la section'}
+                            <ArrowRight size={12} />
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   ))}

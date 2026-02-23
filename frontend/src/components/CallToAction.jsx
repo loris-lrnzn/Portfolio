@@ -100,7 +100,7 @@ const CallToAction = () => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
             </span>
             <span className="text-sm text-gray-500 dark:text-gray-400 font-light">
-              Disponible pour de nouveaux projets
+              Disponible
             </span>
           </div>
         </motion.div>

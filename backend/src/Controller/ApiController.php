@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ChatLog;
 use App\Entity\Message;
 use App\Entity\Project;
 use App\Service\AuthService;
@@ -447,5 +448,78 @@ class ApiController extends AbstractController
             'url' => $imageUrl,
             'filename' => $newFilename
         ]);
+    }
+
+    #[Route('/api/chat-logs', name: 'api_chat_logs_create', methods: ['POST'])]
+    public function createChatLog(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $question = trim($data['question'] ?? '');
+        $answer = trim($data['answer'] ?? '');
+
+        if (!$question || !$answer) {
+            return $this->json(['error' => 'Question and answer are required'], 400);
+        }
+
+        $chatLog = new ChatLog();
+        $chatLog->setQuestion($question);
+        $chatLog->setAnswer($answer);
+
+        $em->persist($chatLog);
+        $em->flush();
+
+        return $this->json(['success' => true], 201);
+    }
+
+    #[Route('/api/admin/chat-logs', name: 'api_admin_chat_logs', methods: ['GET'])]
+    public function getChatLogs(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $chatLogs = $em->getRepository(ChatLog::class)->findBy([], ['createdAt' => 'DESC']);
+
+        $data = array_map(function (ChatLog $log) {
+            return [
+                'id' => $log->getId(),
+                'question' => $log->getQuestion(),
+                'answer' => $log->getAnswer(),
+                'createdAt' => $log->getCreatedAt()->format('Y-m-d H:i:s'),
+            ];
+        }, $chatLogs);
+
+        return $this->json($data);
+    }
+
+    #[Route('/api/admin/chat-logs/{id}', name: 'api_admin_chat_logs_delete', methods: ['DELETE'])]
+    public function deleteChatLog(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $chatLog = $em->getRepository(ChatLog::class)->find($id);
+        if (!$chatLog) {
+            return $this->json(['error' => 'Chat log not found'], 404);
+        }
+
+        $em->remove($chatLog);
+        $em->flush();
+
+        return $this->json(['message' => 'Chat log deleted successfully']);
     }
 }

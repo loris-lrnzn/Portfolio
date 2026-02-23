@@ -1,0 +1,228 @@
+"""
+Django settings for portfolio chatbot.
+"""
+
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = 'django-insecure-portfolio-chatbot-change-in-production'
+
+DEBUG = True
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'corsheaders',
+    'chatbot',
+    'accounts',
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'backend.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'backend.wsgi.application'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
+LANGUAGE_CODE = 'fr-fr'
+TIME_ZONE = 'Europe/Paris'
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = 'static/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/accounts/profile/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+# ── CORS (pour le frontend React sur localhost:3000) ──────────────────
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# ── OpenAI ────────────────────────────────────────────────────────────
+OPENAI_API_KEY = os.environ.get(
+    "OPENAI_API_KEY",
+    "OPENAI_KEY_REMOVED",
+)
+
+OPENAI_MAX_TOKENS_PER_SESSION = 15000
+OPENAI_MAX_MESSAGES_PER_SESSION = 50
+OPENAI_MAX_HISTORY_MESSAGES = 5
+OPENAI_MAX_MESSAGE_LENGTH = 500
+
+OPENAI_SYSTEM_MESSAGE = """Assistant du portfolio de Loris Lorenzini. Réponses courtes et professionnelles."""
+
+# ── Multi-chatbots : profil portfolio ─────────────────────────────────
+CHATBOT_PROFILES = {
+    "portfolio": {
+        "name": "Assistant Portfolio",
+        "memory_enabled": True,
+        "system_message": """Tu es l'assistant virtuel du portfolio de Loris Lorenzini, étudiant développeur web full stack.
+
+INFORMATIONS SUR LORIS :
+- Étudiant en dernière année de B.U.T. MMI (Métiers du Multimédia et de l'Internet), parcours Développement Web, à l'IUT de Saint-Dié-des-Vosges (2024-2026)
+- Précédemment en Licence Informatique à la FST de Nancy (2023-2024)
+- Basé à Moyenmoutier, France
+- Contact : lorislorenzini@outlook.com
+- GitHub : github.com/loris-lrnzn
+- LinkedIn : linkedin.com/in/loris-lorenzini
+
+COMPÉTENCES TECHNIQUES :
+- Back-end : PHP 8, Symfony 6/7 (MVC, Doctrine ORM, API Platform), conception d'API REST
+- Front-end : React, Vue.js 3, TypeScript, Tailwind CSS, JavaScript ES6+, HTML5, CSS3
+- Base de données : MySQL, modélisation relationnelle, requêtes optimisées
+- Outils & Méthodes : Git/GitHub, Docker, Figma, VS Code
+
+PROJETS UNIVERSITAIRES :
+1. Plateforme de gestion d'adhérents JSP (Client Réel) — Développement Back-end avec Symfony 7 : API REST et interface administrateur pour le suivi des dossiers, cours, planning et quizs. Technologies : Symfony 7, API REST, MySQL, Twig.
+2. Pokédex (Application Full Stack CRUD) — Application complète React/Symfony avec authentification JWT et déploiement sur O2Switch. Technologies : Symfony 6, React, JWT, API REST.
+3. JudoDex (Encyclopédie Interactive Judo) — SPA interactive développée avec Vue.js 3 et API PHP Vanilla. Technologies : PHP API, Vue.js 3, SCSS, WordPress.
+4. Stage IUT (Site Promotionnel MMI) — Création de maquettes UI/UX sur Figma et intégration sous WordPress. Technologies : Figma, UI/UX Design, WordPress, CSS3.
+
+EXPÉRIENCES :
+- Manutentionnaire polyvalent aux Papeteries Clairefontaine (étés 2022, 2024, 2025) — Rigueur, travail d'équipe, autonomie
+
+AUTRES :
+- Langues : Français (langue maternelle), Anglais (niveau B2 technique)
+- Intérêts : Judo (Diplôme d'animateur suppléant)
+
+RÈGLES :
+- Réponds en français, de manière concise et professionnelle
+- Si on te demande des informations qui ne sont pas dans ton contexte, dis que tu ne sais pas
+- Sois enthousiaste mais authentique sur les compétences de Loris
+- Ne partage jamais son numéro de téléphone
+
+NAVIGATION — TRÈS IMPORTANT :
+Quand ta réponse mentionne une section du site ou un projet, ajoute UNE balise d'action à la fin (avant les suggestions).
+Formats possibles :
+- [action:anchor:about] → scrolle vers la section "À propos"
+- [action:anchor:services] → scrolle vers la section "Services"
+- [action:anchor:skills] → scrolle vers la section "Compétences"
+- [action:anchor:projects] → scrolle vers la section "Projets"
+- [action:project:11] → ouvre le projet "Plateforme de gestion d'adhérents JSP"
+- [action:project:12] → ouvre le projet "Pokédex"
+- [action:project:13] → ouvre le projet "JudoDex"
+- [action:project:14] → ouvre le projet "Stage IUT — Site Promotionnel MMI"
+
+N'utilise qu'UNE seule balise [action:...] par réponse, celle la plus pertinente.
+Si la question ne concerne pas une section précise, n'ajoute pas de balise action.""",
+        "context_rules": {
+            "time_rules": [
+                {"hours": (6, 12), "instruction": "Nous sommes le matin. Commence par un bonjour chaleureux."},
+                {"hours": (12, 14), "instruction": "C'est l'heure du déjeuner. Sois bref."},
+                {"hours": (18, 23), "instruction": "Nous sommes en soirée. Adopte un ton détendu."},
+                {"hours": (23, 6), "instruction": "Il est tard. Sois concis."},
+            ],
+            "conversation_rules": [
+                {"condition": "first_message", "instruction": "C'est le premier message du visiteur. Présente-toi brièvement comme l'assistant du portfolio de Loris."},
+                {"condition": "returning_after_reset", "instruction": "Le visiteur revient après une absence. Accueille-le à nouveau."},
+                {"condition": "has_summary", "instruction": "La conversation est longue. Reste focalisé sur le sujet."},
+                {"condition": "tokens_low", "threshold": 0.75, "instruction": "La session approche de sa limite. Donne des réponses très concises."},
+                {"condition": "messages_high", "threshold": 0.80, "instruction": "Beaucoup de messages échangés. Essaie de conclure."},
+            ],
+            "extra_instructions": "Tu peux terminer ta réponse avec [suggestions: Option A | Option B | Option C] pour proposer 2-3 réponses rapides au visiteur. Utilise-le quand c'est pertinent, pas systématiquement.",
+        },
+    },
+}
+CHATBOT_DEFAULT = "portfolio"
+CHATBOT_URL_PREFIX = "/chatbot"
+CHATBOT_TIMEZONE = "Europe/Paris"
+
+CHATBOT_MODERATION_ENABLED = True
+CHATBOT_MODERATION_MESSAGE = "Votre message a été bloqué car il enfreint nos règles d'utilisation."
+
+CHATBOT_SUMMARY_THRESHOLD = 6
+
+CHAT_INACTIVITY_TIMEOUT_SECONDS = 1800
+
+CHATBOT_RATELIMIT_CHAT_REQUESTS = 10
+CHATBOT_RATELIMIT_STATUS_REQUESTS = 60
+CHATBOT_RATELIMIT_WINDOW = 60
+
+CHATBOT_MEMORY_ENABLED = True
+CHATBOT_MEMORY_EXTRACT_EVERY = 3
+CHATBOT_MEMORY_MAX_PER_USER = 50
+CHATBOT_MEMORY_MAX_INJECTED = 20
+CHATBOT_MEMORY_COOKIE_MAX_AGE = 365 * 24 * 3600
+CHATBOT_MEMORY_COOKIE_SECURE = not DEBUG
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "chatbot": {
+            "format": "[%(asctime)s] %(levelname)s %(name)s: %(message)s",
+        },
+    },
+    "handlers": {
+        "chatbot_console": {
+            "class": "logging.StreamHandler",
+            "formatter": "chatbot",
+        },
+    },
+    "loggers": {
+        "chatbot": {
+            "handlers": ["chatbot_console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

@@ -7,7 +7,15 @@
       "Bash(python3:*)",
       "Bash(mysql:*)",
       "Bash(chmod:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(TOKEN=\"eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc3MjAxNTUzOX0=\":*)",
+      "Bash(source venv/bin/activate)",
+      "Bash(pip install:*)",
+      "Bash(python manage.py migrate:*)",
+      "Bash(python manage.py makemigrations:*)",
+      "Bash(python manage.py createsuperuser:*)",
+      "Bash(DJANGO_SUPERUSER_PASSWORD=password python manage.py:*)",
+      "Bash(pkill:*)"
     ]
   }
 }
