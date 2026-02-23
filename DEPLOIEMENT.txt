@@ -1,0 +1,115 @@
+════════════════════════════════════════════════════════════════
+  RÉSUMÉ DÉPLOIEMENT — Portfolio lorislorenzini.fr
+════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  INFRASTRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Hébergeur    : OVH
+  VPS          : VPS-1 — 4 vCore / 8 Go RAM / 75 Go SSD NVMe
+  OS           : Ubuntu 24.04 LTS
+  IP           : 149.202.61.240
+  Domaine      : lorislorenzini.fr (HTTPS actif)
+  GitHub       : github.com/loris-lrnzn/Portfolio
+
+  Connexion SSH :
+    ssh ubuntu@149.202.61.240
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  STACK TECHNIQUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Frontend  : React + Vite       → servi par Nginx
+  Backend   : Symfony (PHP 8.4)  → /api/
+  Chatbot   : Django + OpenAI    → /chatbot/
+  BDD       : MySQL 8.0
+  Proxy     : Nginx
+  Conteneurs: Docker + Docker Compose
+
+  Fichiers importants sur le VPS :
+    ~/Portfolio/.env.prod              ← variables sensibles (NE JAMAIS COMMITER)
+    ~/Portfolio/deploy.sh              ← script de déploiement
+    ~/Portfolio/docker-compose.prod.yml
+    ~/Portfolio/frontend/dist/         ← build React (généré automatiquement)
+    ~/Portfolio/backend/migrations/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  COMMANDES DU QUOTIDIEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  DÉPLOYER UNE MISE À JOUR
+  ─────────────────────────
+  ssh ubuntu@149.202.61.240
+  cd ~/Portfolio && ./deploy.sh
+
+  (À faire à chaque fois que tu pousses du nouveau code sur GitHub)
+
+
+  VOIR LES LOGS EN TEMPS RÉEL
+  ────────────────────────────
+  docker logs portfolio-nginx-1 -f       # Nginx (accès / erreurs)
+  docker logs portfolio-symfony-1 -f     # Symfony (erreurs PHP)
+  docker logs portfolio-chatbot-1 -f     # Chatbot Django
+  docker logs portfolio-db-1 -f          # MySQL
+
+
+  VÉRIFIER L'ÉTAT DES CONTENEURS
+  ────────────────────────────────
+  docker compose -f ~/Portfolio/docker-compose.prod.yml ps
+
+
+  REDÉMARRER UN SERVICE
+  ──────────────────────
+  docker compose -f ~/Portfolio/docker-compose.prod.yml restart nginx
+  docker compose -f ~/Portfolio/docker-compose.prod.yml restart symfony
+  docker compose -f ~/Portfolio/docker-compose.prod.yml restart chatbot
+
+
+  TOUT REDÉMARRER
+  ────────────────
+  docker compose -f ~/Portfolio/docker-compose.prod.yml restart
+
+
+  ARRÊTER TOUT
+  ─────────────
+  docker compose -f ~/Portfolio/docker-compose.prod.yml down
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CE QU'IL RESTE À FAIRE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. HTTPS AVEC LET'S ENCRYPT
+  ────────────────────────────
+  (À faire dès que le DNS lorislorenzini.fr est propagé vers 149.202.61.240)
+  Vérifier la propagation : https://dnschecker.org/#A/lorislorenzini.fr
+
+  Sur le VPS :
+    sudo apt install -y certbot python3-certbot-nginx
+    sudo certbot --nginx -d lorislorenzini.fr -d www.lorislorenzini.fr
+
+  Mettre à jour ~/Portfolio/.env.prod :
+    FRONTEND_URL=https://lorislorenzini.fr
+    DJANGO_ALLOWED_HOSTS=lorislorenzini.fr,www.lorislorenzini.fr
+    CORS_ALLOWED_ORIGINS=https://lorislorenzini.fr,https://www.lorislorenzini.fr
+    CHATBOT_MEMORY_COOKIE_SECURE=True
+
+  Mettre à jour nginx/default.conf (en local) :
+    Remplacer : server_name _;
+    Par       : server_name lorislorenzini.fr www.lorislorenzini.fr;
+
+  Puis redéployer :
+    ./deploy.sh
+
+
+  2. AJOUTER DU CONTENU
+  ──────────────────────
+  Ajouter des projets via l'interface admin Symfony.
+
+
+  3. RENOUVELLEMENT SSL (automatique)
+  ─────────────────────────────────────
+  Certbot renouvelle automatiquement le certificat tous les 90 jours.
+  Pour vérifier : sudo certbot renew --dry-run
+
+
