@@ -5,13 +5,40 @@ Django settings for portfolio chatbot.
 import os
 from pathlib import Path
 
+def _load_env_file():
+    env_path = Path(__file__).resolve().parent.parent / '.env'
+    if not env_path.exists():
+        return
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(env_path)
+    except ImportError:
+        # Fallback : lecture manuelle du fichier .env
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, _, value = line.partition('=')
+                os.environ.setdefault(key.strip(), value.strip())
+
+_load_env_file()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-portfolio-chatbot-change-in-production'
+# ── Sécurité — toutes ces valeurs DOIVENT venir des variables d'environnement ──
 
-DEBUG = True
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise RuntimeError(
+        "La variable d'environnement DJANGO_SECRET_KEY n'est pas définie. "
+        "Vérifiez votre fichier .env ou les variables d'environnement du serveur."
+    )
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+
+_allowed_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',') if h.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -88,20 +115,16 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/accounts/profile/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# ── CORS (pour le frontend React sur localhost:3000) ──────────────────
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
+# ── CORS ──────────────────────────────────────────────────────────────
+_cors_origins = os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173'
+)
+CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
 CORS_ALLOW_CREDENTIALS = True
 
 # ── OpenAI ────────────────────────────────────────────────────────────
-OPENAI_API_KEY = os.environ.get(
-    "OPENAI_API_KEY",
-    "OPENAI_KEY_REMOVED",
-)
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 OPENAI_MAX_TOKENS_PER_SESSION = 15000
 OPENAI_MAX_MESSAGES_PER_SESSION = 50

@@ -1,0 +1,27 @@
+# ── Secrets — ne jamais commiter ─────────────────────────────────────
+.env.local
+.env.*.local
+*.env.local
+chatbot/.env
+backend/.env.local
+
+# ── Python ────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+chatbot/venv/
+chatbot/.venv/
+chatbot/db.sqlite3
+
+# ── Node.js ───────────────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# ── PHP / Symfony ─────────────────────────────────────────────────────
+backend/vendor/
+backend/var/
+
+# ── OS ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

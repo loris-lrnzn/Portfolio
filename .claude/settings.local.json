@@ -15,7 +15,14 @@
       "Bash(python manage.py makemigrations:*)",
       "Bash(python manage.py createsuperuser:*)",
       "Bash(DJANGO_SUPERUSER_PASSWORD=password python manage.py:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(while read hash msg)",
+      "Bash(do git show $hash -- chatbot/backend/settings.py)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(pip3 install:*)",
+      "Bash(source:*)",
+      "Bash(python manage.py check:*)"
     ]
   }
 }

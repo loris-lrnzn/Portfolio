@@ -10,14 +10,29 @@ class AuthService
             return null;
         }
 
+        // Token format: base64payload.hmac_sha256_signature
+        $parts = explode('.', $token, 2);
+        if (count($parts) !== 2) {
+            return null;
+        }
+
+        [$payload, $signature] = $parts;
+
+        // Vérifier la signature HMAC avant de décoder le payload
+        $secret = $_ENV['APP_SECRET'] ?? getenv('APP_SECRET') ?? '';
+        $expected = hash_hmac('sha256', $payload, $secret);
+
+        if (!hash_equals($expected, $signature)) {
+            return null;
+        }
+
         try {
-            $decoded = json_decode(base64_decode($token), true);
-            
+            $decoded = json_decode(base64_decode($payload), true);
+
             if (!$decoded || !isset($decoded['exp'])) {
                 return null;
             }
 
-            // Vérifier l'expiration
             if ($decoded['exp'] < time()) {
                 return null;
             }

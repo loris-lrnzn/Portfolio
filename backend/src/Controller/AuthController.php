@@ -15,7 +15,7 @@ class AuthController extends AbstractController
     public function login(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        
+
         $username = $data['username'] ?? null;
         $password = $data['password'] ?? null;
 
@@ -29,15 +29,8 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Invalid credentials'], 401);
         }
 
-        // Générer un token JWT simple (base64)
-        $token = base64_encode(json_encode([
-            'id' => $user->getId(),
-            'username' => $user->getUsername(),
-            'exp' => time() + (7 * 24 * 60 * 60) // 7 jours
-        ]));
-
         return $this->json([
-            'token' => $token,
+            'token' => $this->generateToken($user),
             'user' => [
                 'id' => $user->getId(),
                 'username' => $user->getUsername()
@@ -45,11 +38,19 @@ class AuthController extends AbstractController
         ]);
     }
 
-    #[Route('/api/register', name: 'api_register', methods: ['POST'])]
-    public function register(Request $request, EntityManagerInterface $em): JsonResponse
+    /**
+     * Route de setup uniquement : ne fonctionne que si aucun utilisateur n'existe.
+     * À utiliser une seule fois après le déploiement pour créer le compte admin.
+     */
+    #[Route('/api/admin/setup', name: 'api_admin_setup', methods: ['POST'])]
+    public function setup(Request $request, EntityManagerInterface $em): JsonResponse
     {
+        // Bloqué dès qu'un utilisateur existe
+        if (count($em->getRepository(User::class)->findAll()) > 0) {
+            return $this->json(['error' => 'Setup already completed'], 403);
+        }
+
         $data = json_decode($request->getContent(), true);
-        
         $username = $data['username'] ?? null;
         $password = $data['password'] ?? null;
 
@@ -57,10 +58,8 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Username and password required'], 400);
         }
 
-        // Vérifier si l'utilisateur existe déjà
-        $existingUser = $em->getRepository(User::class)->findOneBy(['username' => $username]);
-        if ($existingUser) {
-            return $this->json(['error' => 'Username already exists'], 400);
+        if (strlen($password) < 12) {
+            return $this->json(['error' => 'Password must be at least 12 characters'], 400);
         }
 
         $user = new User();
@@ -70,46 +69,20 @@ class AuthController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        return $this->json([
-            'message' => 'User created successfully',
-            'user' => [
-                'id' => $user->getId(),
-                'username' => $user->getUsername()
-            ]
-        ], 201);
+        return $this->json(['message' => 'Admin user created successfully'], 201);
     }
 
-    #[Route('/api/admin/create-user', name: 'api_admin_create_user', methods: ['POST'])]
-    public function createAdminUser(Request $request, EntityManagerInterface $em): JsonResponse
+    private function generateToken(User $user): string
     {
-        $data = json_decode($request->getContent(), true);
-        
-        $username = $data['username'] ?? null;
-        $password = $data['password'] ?? null;
+        $payload = base64_encode(json_encode([
+            'id' => $user->getId(),
+            'username' => $user->getUsername(),
+            'exp' => time() + (7 * 24 * 60 * 60)
+        ]));
 
-        if (!$username || !$password) {
-            return $this->json(['error' => 'Username and password required'], 400);
-        }
+        $secret = $_ENV['APP_SECRET'] ?? getenv('APP_SECRET') ?? '';
+        $signature = hash_hmac('sha256', $payload, $secret);
 
-        // Vérifier si l'utilisateur existe déjà
-        $existingUser = $em->getRepository(User::class)->findOneBy(['username' => $username]);
-        if ($existingUser) {
-            return $this->json(['error' => 'Username already exists'], 400);
-        }
-
-        $user = new User();
-        $user->setUsername($username);
-        $user->setPassword($password);
-
-        $em->persist($user);
-        $em->flush();
-
-        return $this->json([
-            'message' => 'Admin user created successfully',
-            'user' => [
-                'id' => $user->getId(),
-                'username' => $user->getUsername()
-            ]
-        ], 201);
+        return $payload . '.' . $signature;
     }
 }
