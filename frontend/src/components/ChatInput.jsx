@@ -63,7 +63,7 @@ const ChatInput = () => {
     setMessages(prev => [...prev, { type: 'user', content: question }])
     setIsLoading(true)
 
-    const baseUrl = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8001'
+    const baseUrl = import.meta.env.VITE_CHATBOT_API_URL || ''
     const chatUrl = `${baseUrl.replace(/\/$/, '')}/chatbot/portfolio/api/chat/`
 
     try {
