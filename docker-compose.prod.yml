@@ -37,20 +37,20 @@ services:
     volumes:
       - chatbot_data:/app/data
 
-  # ── Base de données PostgreSQL ────────────────────────────────────
+  # ── Base de données MySQL ─────────────────────────────────────────
   db:
-    image: postgres:16-alpine
+    image: mysql:8.0
     restart: unless-stopped
     env_file:
       - .env.prod
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U portfolio -d portfolio"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
-  postgres_data:
+  mysql_data:
   chatbot_data:
