@@ -1,0 +1,56 @@
+services:
+
+  # ── Nginx — sert le frontend et proxifie vers symfony/chatbot ──────
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - symfony
+      - chatbot
+
+  # ── Backend Symfony ───────────────────────────────────────────────
+  symfony:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Chatbot Django ────────────────────────────────────────────────
+  chatbot:
+    build:
+      context: ./chatbot
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    volumes:
+      - chatbot_data:/app/data
+
+  # ── Base de données PostgreSQL ────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio -d portfolio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  chatbot_data:
