@@ -1,0 +1,227 @@
+════════════════════════════════════════════════════════════════
+  PRÉPARATION ORAL — Projet de fin d'études
+  Portfolio lorislorenzini.fr
+════════════════════════════════════════════════════════════════
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  PLAN D'ORAL RECOMMANDÉ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. INTRODUCTION (1-2 min)
+  ──────────────────────────
+  "J'ai développé un portfolio personnel full stack déployé en production
+  sur un VPS. L'objectif était de créer une vitrine professionnelle avec
+  un vrai backend, une API REST et un chatbot intelligent intégré."
+
+  Points à mentionner :
+  - C'est un projet complet, en production, accessible sur lorislorenzini.fr
+  - Stack : React / Symfony / Django / MySQL / Docker / Nginx
+  - Déployé sur un VPS OVH avec HTTPS
+
+
+  2. FRONTEND — React + Vite (3-4 min)
+  ──────────────────────────────────────
+  - Application SPA (Single Page Application) en React
+  - Vite comme bundler (plus rapide que Create React App, Hot Module Replacement)
+  - Routing côté client (React Router)
+  - Appels API vers Symfony via Axios
+  - Build de production optimisé (minification, code splitting, hash de fichiers)
+  - Servi statiquement par Nginx (performant, pas de Node.js en prod)
+
+
+  3. BACKEND — API REST Symfony (4-5 min)
+  ─────────────────────────────────────────
+  - Framework Symfony (PHP 8.4) — standard en entreprise française
+  - Architecture API REST : endpoints /api/projects, /api/login, etc.
+  - Doctrine ORM pour la base de données (entités : Project, User, Message, ChatLog)
+  - Système de migrations pour versionner la base de données
+  - Authentification JWT ou session pour la partie admin
+  - MySQL comme base de données relationnelle
+
+
+  4. CHATBOT — Django + OpenAI (3-4 min)
+  ─────────────────────────────────────────
+  - Microservice séparé en Python/Django (séparation des responsabilités)
+  - API OpenAI GPT-4o-mini pour la génération de réponses
+  - Système de mémoire utilisateur (cookies + base de données)
+  - Rate limiting pour éviter les abus
+  - Modération des messages via l'API OpenAI
+  - Résumé automatique de l'historique de conversation
+
+
+  5. DÉPLOIEMENT (4-5 min)  ← partie qui impressionne le plus
+  ──────────────────────────
+  - Containerisation avec Docker (reproductibilité, isolation)
+  - Docker Compose pour orchestrer les 4 services (nginx, symfony, chatbot, db)
+  - VPS OVH Ubuntu 24.04 LTS
+  - Nginx comme reverse proxy : redirige /api/ → Symfony, /chatbot/ → Django
+  - HTTPS avec Let's Encrypt (certificat SSL gratuit, renouvellement automatique)
+  - Script deploy.sh automatisé : git pull → build frontend → docker compose up
+  - GitHub pour le versioning du code
+
+
+  6. CONCLUSION (1 min)
+  ──────────────────────
+  - Ce que ce projet m'a appris
+  - Ce que j'améliorerais (CI/CD automatique, tests unitaires, monitoring)
+  - Le site est en production et utilisable maintenant
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  QUESTIONS PROBABLES DU JURY + RÉPONSES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ── FRONTEND ──────────────────────────────────────────────────
+
+  Q : Pourquoi React plutôt que Vue.js ou Angular ?
+  R : React est la bibliothèque la plus utilisée en entreprise, avec le plus
+      grand écosystème. Vue est une bonne alternative mais moins demandé
+      sur le marché du travail. Angular est plus rigide et adapté aux très
+      grands projets. React offre le bon équilibre flexibilité/popularité.
+
+  Q : C'est quoi une SPA et pourquoi ce choix ?
+  R : Single Page Application : une seule page HTML, le routing se fait en
+      JavaScript sans rechargement complet. Avantage : navigation fluide,
+      expérience utilisateur proche d'une app native. Inconvénient :
+      moins bon pour le SEO (compensable avec du SSR, mais pour un portfolio
+      de développeur ce n'est pas prioritaire).
+
+  Q : Pourquoi Vite plutôt que Webpack ?
+  R : Vite est beaucoup plus rapide en développement grâce aux modules ES
+      natifs du navigateur. Le cold start est quasi instantané contre
+      plusieurs secondes avec Webpack. En production, Vite utilise Rollup
+      pour un bundle optimisé.
+
+
+  ── BACKEND ───────────────────────────────────────────────────
+
+  Q : Pourquoi Symfony plutôt que Laravel ?
+  R : Les deux sont excellents. Symfony est plus répandu dans les entreprises
+      françaises et les projets d'envergure. C'est aussi ce que j'ai appris
+      en formation. Laravel est très populaire mais plus orienté startups
+      anglo-saxonnes.
+
+  Q : C'est quoi un ORM et pourquoi Doctrine ?
+  R : Un ORM (Object-Relational Mapping) permet de manipuler la base de
+      données via des objets PHP plutôt qu'en écrivant du SQL brut.
+      Doctrine est l'ORM standard de Symfony. Avantage : code plus propre,
+      changement de BDD facilité, migrations automatiques.
+
+  Q : Pourquoi une API REST et pas du rendu serveur classique ?
+  R : Une API REST sépare complètement le frontend du backend. Le backend
+      ne fait que retourner du JSON, n'importe quel client peut le consommer
+      (web, mobile, etc.). C'est l'architecture moderne standard.
+
+  Q : Comment tu sécurises ton API ?
+  R : Authentification par session/JWT pour les routes admin, validation
+      des données en entrée, protection CORS (seul le domaine autorisé
+      peut appeler l'API), HTTPS pour chiffrer les échanges.
+
+
+  ── CHATBOT ───────────────────────────────────────────────────
+
+  Q : Pourquoi un microservice séparé en Python pour le chatbot ?
+  R : Séparation des responsabilités : le chatbot a sa propre stack Python
+      avec ses dépendances (OpenAI SDK, Django). Si le chatbot tombe, le
+      reste du site continue de fonctionner. C'est aussi plus facile à
+      maintenir et faire évoluer indépendamment.
+
+  Q : Pourquoi GPT-4o-mini et pas GPT-4 ?
+  R : GPT-4o-mini offre un très bon rapport qualité/prix. Pour un chatbot
+      de portfolio, les réponses sont largement suffisantes. GPT-4 coûte
+      10x plus cher sans apporter de valeur ajoutée visible pour ce cas d'usage.
+
+  Q : C'est quoi le rate limiting et pourquoi c'est important ?
+  R : Limiter le nombre de requêtes par IP sur une période de temps.
+      Sans ça, quelqu'un pourrait spammer le chatbot et générer une facture
+      OpenAI énorme. C'est une protection essentielle sur tout service
+      qui consomme une API payante.
+
+  Q : Comment fonctionne la mémoire du chatbot ?
+  R : Un cookie UUID identifie l'utilisateur de façon anonyme. Ses
+      préférences et informations sont stockées en base de données. À
+      chaque nouvelle conversation, le contexte mémorisé est injecté dans
+      le prompt système envoyé à OpenAI.
+
+
+  ── DÉPLOIEMENT ───────────────────────────────────────────────
+
+  Q : Pourquoi Docker ?
+  R : Docker garantit que l'application tourne de façon identique en
+      développement et en production. Plus de problème de "ça marche sur
+      ma machine". Chaque service est isolé dans son conteneur, les
+      dépendances ne conflictent pas.
+
+  Q : C'est quoi Docker Compose ?
+  R : Un outil pour définir et lancer plusieurs conteneurs ensemble via
+      un fichier YAML. Ici j'ai 4 services : nginx, symfony, chatbot, mysql.
+      Une seule commande "docker compose up" lance tout.
+
+  Q : Pourquoi Nginx et pas Apache ?
+  R : Nginx est plus performant pour servir des fichiers statiques et
+      gérer beaucoup de connexions simultanées. Il est aussi plus léger.
+      C'est le standard pour les architectures modernes.
+
+  Q : C'est quoi un reverse proxy ?
+  R : Un serveur qui reçoit toutes les requêtes et les redirige vers le
+      bon service en fonction de l'URL. Ici Nginx reçoit tout sur le port 80/443,
+      envoie /api/ vers Symfony et /chatbot/ vers Django. Le client ne voit
+      qu'une seule adresse.
+
+  Q : Comment tu gères les mises à jour du site ?
+  R : J'ai un script deploy.sh qui automatise tout : git pull pour récupérer
+      le nouveau code, build du frontend React, puis docker compose pour
+      reconstruire et relancer les conteneurs. Une seule commande suffit.
+
+  Q : C'est quoi HTTPS et Let's Encrypt ?
+  R : HTTPS chiffre les communications entre le navigateur et le serveur.
+      Let's Encrypt est une autorité de certification gratuite et automatisée.
+      Le certificat SSL se renouvelle automatiquement tous les 90 jours
+      via Certbot. Sans HTTPS, les données transitent en clair sur le réseau.
+
+  Q : Pourquoi un VPS plutôt que Vercel/Netlify/Heroku ?
+  R : Les plateformes comme Vercel sont excellentes pour le frontend statique,
+      mais limitées pour un backend complet avec base de données et plusieurs
+      services. Un VPS donne un contrôle total sur l'environnement. C'est
+      aussi plus formateur — j'ai tout configuré moi-même.
+
+
+  ── QUESTIONS PIÈGES ──────────────────────────────────────────
+
+  Q : Quels sont les points faibles de ton projet ?
+  R : (Montrer que tu as du recul)
+      - Pas de tests unitaires ni d'intégration
+      - Pas de CI/CD automatique (GitHub Actions pourrait déclencher le
+        deploy automatiquement à chaque push)
+      - Pas de monitoring/alerting (si le site tombe la nuit, je ne le sais
+        pas immédiatement)
+      - Le script deploy.sh génère quelques secondes de downtime pendant
+        la reconstruction des conteneurs
+
+  Q : Qu'est-ce que tu ferais différemment ?
+  R : J'ajouterais des tests dès le début, je mettrais en place GitHub Actions
+      pour automatiser le déploiement, et j'utiliserais peut-être un outil
+      de monitoring comme UptimeRobot pour être alerté si le site tombe.
+
+  Q : Comment tu gérerais une montée en charge ?
+  R : Avec l'infrastructure actuelle (4 vCPU, 8 Go RAM) le site peut
+      gérer plusieurs centaines de visiteurs simultanés. Pour aller plus
+      loin : load balancer, plusieurs instances du backend, cache Redis,
+      CDN pour les assets statiques.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CONSEILS POUR L'ORAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  - Montre le site en live sur lorislorenzini.fr — c'est ton meilleur argument
+  - Explique le POURQUOI de chaque choix, pas juste le QUOI
+  - Si tu ne sais pas répondre à une question, dis-le honnêtement et
+    explique comment tu chercherais la réponse
+  - Le fait d'avoir un vrai déploiement en production est rare pour un
+    projet de fin d'études — mets-le en valeur
+  - Prépare un schéma de l'architecture (une slide avec les 4 conteneurs
+    et les flèches entre eux) — ça clarifie tout visuellement
+
+════════════════════════════════════════════════════════════════
