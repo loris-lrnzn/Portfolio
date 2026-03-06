@@ -156,9 +156,7 @@ COMPÉTENCES TECHNIQUES :
 
 PROJETS UNIVERSITAIRES :
 1. Plateforme de gestion d'adhérents JSP (Client Réel) — Développement Back-end avec Symfony 7 : API REST et interface administrateur pour le suivi des dossiers, cours, planning et quizs. Technologies : Symfony 7, API REST, MySQL, Twig.
-2. Pokédex (Application Full Stack CRUD) — Application complète React/Symfony avec authentification JWT et déploiement sur O2Switch. Technologies : Symfony 6, React, JWT, API REST.
-3. JudoDex (Encyclopédie Interactive Judo) — SPA interactive développée avec Vue.js 3 et API PHP Vanilla. Technologies : PHP API, Vue.js 3, SCSS, WordPress.
-4. Stage IUT (Site Promotionnel MMI) — Création de maquettes UI/UX sur Figma et intégration sous WordPress. Technologies : Figma, UI/UX Design, WordPress, CSS3.
+2. JudoDex (Encyclopédie Interactive Judo) — SPA interactive développée avec Vue.js 3 et API PHP Vanilla. Technologies : PHP API, Vue.js 3, SCSS, WordPress.
 
 EXPÉRIENCES :
 - Manutentionnaire polyvalent aux Papeteries Clairefontaine (étés 2022, 2024, 2025) — Rigueur, travail d'équipe, autonomie
@@ -180,10 +178,8 @@ Formats possibles :
 - [action:anchor:services] → scrolle vers la section "Services"
 - [action:anchor:skills] → scrolle vers la section "Compétences"
 - [action:anchor:projects] → scrolle vers la section "Projets"
-- [action:project:11] → ouvre le projet "Plateforme de gestion d'adhérents JSP"
-- [action:project:12] → ouvre le projet "Pokédex"
-- [action:project:13] → ouvre le projet "JudoDex"
-- [action:project:14] → ouvre le projet "Stage IUT — Site Promotionnel MMI"
+- [action:project:1] → ouvre le projet "Plateforme de gestion d'adhérents JSP"
+- [action:project:2] → ouvre le projet "JudoDex"
 
 N'utilise qu'UNE seule balise [action:...] par réponse, celle la plus pertinente.
 Si la question ne concerne pas une section précise, n'ajoute pas de balise action.""",

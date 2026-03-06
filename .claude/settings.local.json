@@ -22,7 +22,23 @@
       "Bash(done)",
       "Bash(pip3 install:*)",
       "Bash(source:*)",
-      "Bash(python manage.py check:*)"
+      "Bash(python manage.py check:*)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(ssh:*)",
+      "Bash(git:*)",
+      "Bash(head:*)",
+      "Bash(scp:*)",
+      "Bash(dig +short:*)",
+      "Bash(tail:*)",
+      "Bash(host:*)",
+      "Bash(npm run:*)",
+      "Bash(symfony server:start:*)",
+      "Bash(php:*)"
     ]
   }
 }
