@@ -15,6 +15,7 @@ services:
     depends_on:
       - symfony
       - chatbot
+      - pocketbase
 
   # ── Backend Symfony ───────────────────────────────────────────────
   symfony:
@@ -41,6 +42,15 @@ services:
     volumes:
       - chatbot_data:/app/data
 
+  # ── PocketBase (COP1 backend) ─────────────────────────────────────
+  pocketbase:
+    build:
+      context: ./pocketbase
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - pocketbase_data:/pb/pb_data
+
   # ── Base de données MySQL ─────────────────────────────────────────
   db:
     image: mysql:8.0
@@ -59,3 +69,4 @@ volumes:
   mysql_data:
   chatbot_data:
   uploads_data:
+  pocketbase_data:
