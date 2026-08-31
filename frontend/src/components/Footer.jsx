@@ -70,7 +70,9 @@ const Footer = ({ withChatPadding = false }) => {
                 Loris Lorenzini
               </button>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 font-light">
-                Étudiant Développeur Web Full Stack
+                Développeur Web Full Stack
+                <br />
+                Mastère CTO &amp; Tech Lead — HETIC
               </p>
             </div>
 

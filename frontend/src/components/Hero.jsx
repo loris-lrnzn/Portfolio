@@ -57,7 +57,7 @@ const Hero = () => {
         >
           <span className="w-12 h-px bg-gray-300 dark:bg-gray-700" />
           <span className="text-xs text-gray-400 dark:text-gray-500 font-medium tracking-[0.3em] uppercase">
-            Étudiant Développeur Web Full Stack
+            Développeur Web Full Stack · En recherche d'alternance
           </span>
           <span className="w-12 h-px bg-gray-300 dark:bg-gray-700" />
         </motion.div>

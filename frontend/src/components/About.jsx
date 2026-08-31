@@ -117,8 +117,9 @@ const About = () => {
               </span>
             </div>
             <p className="text-lg text-gray-600 dark:text-gray-400 font-light leading-relaxed">
-              Étudiant en dernière année de B.U.T. MMI, spécialisé en Développement Web à l'IUT de Saint-Dié-des-Vosges.
-              Je possède une double expertise Back-end (Symfony, PHP, API REST) et Front-end (React, Vue.js).
+              Titulaire d'un B.U.T. MMI parcours Développement Web (IUT de Saint-Dié-des-Vosges), j'intègre le
+              Mastère CTO &amp; Tech Lead de HETIC à Paris. Je recherche une alternance pour m'y accompagner.
+              Double expertise Back-end (Symfony, PHP, API REST) et Front-end (React, Vue.js).
             </p>
           </motion.div>
 
