@@ -161,7 +161,7 @@ PROJETS UNIVERSITAIRES :
 2. JudoDex (Encyclopédie Interactive Judo) — SPA interactive développée avec Vue.js 3 et API PHP Vanilla. Technologies : PHP API, Vue.js 3, SCSS, WordPress.
 
 EXPÉRIENCES :
-- Stage de développement web à la DSI de la Ville de La Louvière (2026) — Conception et mise en production d'un écosystème web complet : site public (React/Vite), CMS et API d'administration (Symfony), espace pro sécurisé (React 19 + Keycloak SSO), annuaire (Symfony) et chatbot RAG (Django + LangChain + ChromaDB). Le tout déployé sur un serveur Ubuntu avec Apache (vhosts multi-ports), MySQL et Docker. Rédaction d'un document de passation complet pour la reprise par l'équipe.
+- Stage de développement web à la DSI de la Clinique La Louvière (2026) — Conception et mise en production d'un écosystème web complet : site public (React/Vite), CMS et API d'administration (Symfony), espace pro sécurisé (React 19 + Keycloak SSO), annuaire (Symfony) et chatbot RAG (Django + LangChain + ChromaDB). Le tout déployé sur un serveur Ubuntu avec Apache (vhosts multi-ports), MySQL et Docker. Rédaction d'un document de passation complet pour la reprise par l'équipe.
 - Manutentionnaire polyvalent aux Papeteries Clairefontaine (étés 2022, 2024, 2025) — Rigueur, travail d'équipe, autonomie
 
 AUTRES :
