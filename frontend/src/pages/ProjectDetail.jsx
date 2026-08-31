@@ -8,6 +8,7 @@ import ScrollProgress from '../components/ScrollProgress'
 import Footer from '../components/Footer'
 import ImageCarousel from '../components/ImageCarousel'
 import useReducedMotion from '../hooks/useReducedMotion'
+import useSeo from '../hooks/useSeo'
 
 const API_URL = '/api'
 
@@ -19,6 +20,12 @@ const ProjectDetail = () => {
   const [allProjects, setAllProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  useSeo({
+    title: project?.title,
+    description: project?.description?.slice(0, 160),
+    path: `/project/${id}`,
+  })
+
   useEffect(() => {
     fetchProject()
     fetchAllProjects()

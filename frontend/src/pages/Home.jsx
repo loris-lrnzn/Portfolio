@@ -15,6 +15,7 @@ import ScrollProgress from '../components/ScrollProgress'
 import ScrollToTop from '../components/ScrollToTop'
 import Footer from '../components/Footer'
 import useReducedMotion from '../hooks/useReducedMotion'
+import useSeo from '../hooks/useSeo'
 
 const API_URL = '/api'
 
@@ -26,6 +27,12 @@ const Home = () => {
   const [chatbotEnabled, setChatbotEnabled] = useState(false)
   const prefersReducedMotion = useReducedMotion()
   const location = useLocation()
+
+  useSeo({
+    title: 'Développeur Web Full Stack',
+    description: "Portfolio de Loris Lorenzini, développeur web full stack (Symfony, React, Django, Docker). En recherche d'une alternance pour le Mastère CTO & Tech Lead à HETIC.",
+    path: '/',
+  })
 
   useEffect(() => {
     // Le chatbot n'est affiché que s'il est activé dans l'administration
