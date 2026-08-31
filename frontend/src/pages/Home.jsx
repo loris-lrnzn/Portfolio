@@ -23,8 +23,16 @@ const Home = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedFilters, setSelectedFilters] = useState([])
+  const [chatbotEnabled, setChatbotEnabled] = useState(false)
   const prefersReducedMotion = useReducedMotion()
   const location = useLocation()
+
+  useEffect(() => {
+    // Le chatbot n'est affiché que s'il est activé dans l'administration
+    axios.get(`${API_URL}/settings`)
+      .then(({ data }) => setChatbotEnabled(data.chatbot_enabled))
+      .catch(() => setChatbotEnabled(false))
+  }, [])
 
   useEffect(() => {
     fetchProjects()
@@ -165,13 +173,13 @@ const Home = () => {
         <CallToAction />
       </main>
 
-      <Footer withChatPadding />
+      <Footer withChatPadding={chatbotEnabled} />
 
       {/* Scroll to Top Button */}
       <ScrollToTop />
 
-      {/* Chatbot Bar - Fixed at bottom */}
-      <ChatInput />
+      {/* Chatbot Bar - Fixed at bottom (activable depuis l'administration) */}
+      {chatbotEnabled && <ChatInput />}
     </div>
   )
 }

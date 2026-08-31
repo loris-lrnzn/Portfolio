@@ -25,6 +25,8 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState('projects')
   const [projects, setProjects] = useState([])
   const [chatLogs, setChatLogs] = useState([])
+  const [chatbotEnabled, setChatbotEnabled] = useState(true)
+  const [savingChatbot, setSavingChatbot] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -90,6 +92,7 @@ const Admin = () => {
   useEffect(() => {
     fetchProjects()
     fetchChatLogs()
+    fetchSettings()
   }, [])
 
   const fetchProjects = async () => {
@@ -102,6 +105,30 @@ const Admin = () => {
       toast.error('Erreur lors du chargement des projets')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/settings`)
+      setChatbotEnabled(response.data.chatbot_enabled)
+    } catch (error) {
+      console.error('Error fetching settings:', error)
+    }
+  }
+
+  const handleToggleChatbot = async () => {
+    const next = !chatbotEnabled
+    try {
+      setSavingChatbot(true)
+      await axios.put(`${API_URL}/admin/settings`, { chatbot_enabled: next })
+      setChatbotEnabled(next)
+      toast.success(next ? 'Chatbot affiché sur le site' : 'Chatbot masqué du site')
+    } catch (error) {
+      console.error('Error updating settings:', error)
+      toast.error('Erreur lors de la mise à jour du réglage')
+    } finally {
+      setSavingChatbot(false)
     }
   }
 
@@ -498,6 +525,37 @@ const Admin = () => {
         {/* Conversations Tab */}
         {activeTab === 'conversations' && (
           <div className="space-y-3">
+            {/* Réglage : affichage du chatbot sur le site */}
+            <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Chatbot sur le site
+                </p>
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {chatbotEnabled
+                    ? 'Le chatbot est visible par les visiteurs.'
+                    : 'Le chatbot est masqué. Les visiteurs ne le voient pas.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={chatbotEnabled}
+                aria-label="Afficher le chatbot sur le site"
+                onClick={handleToggleChatbot}
+                disabled={savingChatbot}
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+                  chatbotEnabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    chatbotEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
             {chatLogs.length === 0 ? (
               <div className="flex items-center justify-center py-32">
                 <div className="text-center">

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\ChatLog;
 use App\Entity\Message;
 use App\Entity\Project;
+use App\Entity\Setting;
 use App\Service\AuthService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,6 +17,47 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ApiController extends AbstractController
 {
+    #[Route('/api/settings', name: 'api_settings', methods: ['GET'])]
+    public function getSettings(EntityManagerInterface $em): JsonResponse
+    {
+        $setting = $em->getRepository(Setting::class)->find('chatbot_enabled');
+
+        return $this->json([
+            'chatbot_enabled' => $setting === null ? true : $setting->getValue() === '1',
+        ]);
+    }
+
+    #[Route('/api/admin/settings', name: 'api_admin_settings_update', methods: ['PUT'])]
+    public function updateSettings(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!array_key_exists('chatbot_enabled', $data ?? [])) {
+            return $this->json(['error' => 'chatbot_enabled required'], 400);
+        }
+
+        $setting = $em->getRepository(Setting::class)->find('chatbot_enabled');
+        if (!$setting) {
+            $setting = (new Setting())->setName('chatbot_enabled');
+            $em->persist($setting);
+        }
+
+        $setting->setValue($data['chatbot_enabled'] ? '1' : '0');
+        $em->flush();
+
+        return $this->json(['chatbot_enabled' => $setting->getValue() === '1']);
+    }
+
     #[Route('/api/projects', name: 'api_projects', methods: ['GET'])]
     public function getProjects(EntityManagerInterface $em): JsonResponse
     {
