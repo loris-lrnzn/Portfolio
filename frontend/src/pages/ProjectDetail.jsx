@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, ExternalLink, Github, Calendar, ArrowUpRight } from 'lucide-react'
 import axios from 'axios'
@@ -19,17 +19,6 @@ const ProjectDetail = () => {
   const [allProjects, setAllProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const heroRef = useRef(null)
-
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  })
-
-  const heroImageY = useTransform(scrollYProgress, [0, 1], [0, 150])
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1])
-
   useEffect(() => {
     fetchProject()
     fetchAllProjects()
@@ -122,135 +111,83 @@ const ProjectDetail = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg">
       <ScrollProgress />
-      <Header darkHero />
+      <Header darkHero={false} />
 
       {/* Hero Section - Full Screen with Parallax */}
-      <section ref={heroRef} className="relative h-screen overflow-hidden">
-        {/* Background Image with Parallax */}
-        {(project.images?.length > 0 || project.image_url) ? (
-          <motion.div
-            className="absolute inset-0"
-            style={prefersReducedMotion ? {} : { y: heroImageY, scale: heroScale }}
+      {/* En-tête du projet */}
+      <section className="relative pt-32 pb-12 md:pt-40 md:pb-16 bg-white dark:bg-dark-bg border-b border-gray-100 dark:border-gray-800 overflow-hidden">
+        {/* Halo décoratif discret */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 -right-24 h-80 w-80 rounded-full bg-primary-blue/10 dark:bg-primary-cyan/10 blur-3xl"
+        />
+
+        <div className="relative container mx-auto px-4 md:px-8 max-w-6xl">
+          {/* Retour */}
+          <motion.button
+            {...getAnimationProps({
+              initial: { opacity: 0, x: -20 },
+              animate: { opacity: 1, x: 0 },
+              transition: { duration: 0.5 }
+            })}
+            onClick={() => navigate('/')}
+            className="mb-10 flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors group"
           >
-            <img
-              src={project.images?.[0] || project.image_url}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/40" />
-          </motion.div>
-        ) : (
-          <div className="absolute inset-0 bg-gray-900" />
-        )}
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            Retour
+          </motion.button>
 
-        {/* Back Button */}
-        <motion.button
-          {...getAnimationProps({
-            initial: { opacity: 0, x: -20 },
-            animate: { opacity: 1, x: 0 },
-            transition: { duration: 0.5, delay: 0.3 }
-          })}
-          onClick={() => navigate('/')}
-          className="absolute top-24 left-4 md:left-8 z-20 flex items-center gap-2 text-sm text-white/80 hover:text-white font-medium transition-colors group"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Retour
-        </motion.button>
+          {/* Numéro de projet */}
+          <motion.span
+            {...getAnimationProps({
+              initial: { opacity: 0, y: 20 },
+              animate: { opacity: 1, y: 0 },
+              transition: { duration: 0.6, delay: 0.1 }
+            })}
+            className="block text-xs text-gray-400 dark:text-gray-500 font-medium tracking-[0.3em] uppercase"
+          >
+            {currentIndex >= 0 ? `Projet ${String(currentIndex + 1).padStart(2, '0')}` : 'Projet'}
+          </motion.span>
 
-        {/* Hero Content */}
-        <motion.div
-          className="relative z-10 h-full flex flex-col justify-end pb-16 md:pb-24"
-          style={prefersReducedMotion ? {} : { opacity: heroOpacity }}
-        >
-          <div className="container mx-auto px-4 md:px-8 max-w-6xl">
-            {/* Project Number */}
-            <motion.div
-              {...getAnimationProps({
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 },
-                transition: { duration: 0.6, delay: 0.2 }
-              })}
-              className="mb-4"
-            >
-              <span className="text-white/60 text-sm font-medium tracking-[0.3em]">
-                {currentIndex >= 0 ? `PROJET ${String(currentIndex + 1).padStart(2, '0')}` : 'PROJET'}
-              </span>
-            </motion.div>
+          {/* Titre */}
+          <motion.h1
+            {...getAnimationProps({
+              initial: { opacity: 0, y: 30 },
+              animate: { opacity: 1, y: 0 },
+              transition: { duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }
+            })}
+            className="mt-4 text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] text-gray-900 dark:text-gray-100"
+          >
+            {project.title}
+          </motion.h1>
 
-            {/* Title with Animated Gradient */}
-            <motion.h1
-              {...getAnimationProps({
-                initial: { opacity: 0, y: 40 },
-                animate: { opacity: 1, y: 0 },
-                transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
-              })}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-6"
-            >
-              <span
-                className="bg-clip-text text-transparent animate-gradient-shift"
-                style={{
-                  backgroundImage: 'linear-gradient(90deg, #fff, #06B6D4, #fff, #2563EB, #fff)',
-                  backgroundSize: '200% 100%',
-                }}
-              >
-                {project.title}
-              </span>
-            </motion.h1>
-
-            {/* Meta Row */}
-            <motion.div
-              {...getAnimationProps({
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 },
-                transition: { duration: 0.6, delay: 0.4 }
-              })}
-              className="flex flex-wrap items-center gap-4 md:gap-6"
-            >
-              {project.year && (
-                <div className="flex items-center gap-2 text-white/70">
-                  <Calendar size={16} />
-                  <span className="text-sm">{project.year}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-3">
-                {project.technology_tags.slice(0, 4).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/90 text-xs font-medium"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {project.technology_tags.length > 4 && (
-                  <span className="text-white/60 text-xs">
-                    +{project.technology_tags.length - 4}
-                  </span>
-                )}
+          {/* Année et technologies */}
+          <motion.div
+            {...getAnimationProps({
+              initial: { opacity: 0, y: 20 },
+              animate: { opacity: 1, y: 0 },
+              transition: { duration: 0.6, delay: 0.25 }
+            })}
+            className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3"
+          >
+            {project.year && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                <Calendar size={16} />
+                <span className="text-sm">{project.year}</span>
               </div>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          {...getAnimationProps({
-            initial: { opacity: 0 },
-            animate: { opacity: 1 },
-            transition: { delay: 1 }
-          })}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
-        >
-          <motion.div
-            animate={prefersReducedMotion ? {} : { y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            className="flex flex-col items-center gap-2"
-          >
-            <span className="text-[10px] text-white/50 font-medium tracking-[0.2em] uppercase">
-              Scroll
-            </span>
-            <div className="w-px h-8 bg-gradient-to-b from-white/50 to-transparent" />
+            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {project.technology_tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Overview Section */}
