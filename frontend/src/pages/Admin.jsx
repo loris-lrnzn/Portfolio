@@ -229,7 +229,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg relative default-cursor">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg relative">
       <ScrollProgress />
       <Header />
 

@@ -4,7 +4,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, ExternalLink, Github, Calendar, ArrowUpRight } from 'lucide-react'
 import axios from 'axios'
 import Header from '../components/Header'
-import CustomCursor from '../components/CustomCursor'
 import ScrollProgress from '../components/ScrollProgress'
 import Footer from '../components/Footer'
 import ImageCarousel from '../components/ImageCarousel'
@@ -83,7 +82,6 @@ const ProjectDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-dark-bg">
-        <CustomCursor />
         <ScrollProgress />
         <Header darkHero={false} />
         <div className="flex items-center justify-center min-h-screen">
@@ -103,7 +101,6 @@ const ProjectDetail = () => {
   if (error || !project) {
     return (
       <div className="min-h-screen bg-white dark:bg-dark-bg">
-        <CustomCursor />
         <ScrollProgress />
         <Header darkHero={false} />
         <div className="flex items-center justify-center min-h-screen">
@@ -124,7 +121,6 @@ const ProjectDetail = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg">
-      <CustomCursor />
       <ScrollProgress />
       <Header darkHero />
 

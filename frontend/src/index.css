@@ -2,63 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hide default cursor on desktop only when custom cursor is active */
-@media (pointer: fine) {
-  *:not(.default-cursor):not(.default-cursor *) {
-    cursor: none !important;
-  }
-
-  /* Restore cursors for admin pages */
-  .default-cursor,
-  .default-cursor * {
-    cursor: default !important;
-  }
-
-  /* Clickable elements - pointer (including children) */
-  .default-cursor a,
-  .default-cursor a *,
-  .default-cursor button,
-  .default-cursor button *,
-  .default-cursor [role="button"],
-  .default-cursor [role="button"] *,
-  .default-cursor input[type="submit"],
-  .default-cursor input[type="checkbox"],
-  .default-cursor input[type="radio"],
-  .default-cursor input[type="file"],
-  .default-cursor select,
-  .default-cursor label[for],
-  .default-cursor .cursor-pointer,
-  .default-cursor .cursor-pointer * {
-    cursor: pointer !important;
-  }
-
-  /* Text inputs - text cursor */
-  .default-cursor input:not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-  .default-cursor textarea {
-    cursor: text !important;
-  }
-
-  /* Draggable elements - grab/move */
-  .default-cursor [draggable="true"],
-  .default-cursor .cursor-move,
-  .default-cursor .cursor-grab {
-    cursor: grab !important;
-  }
-
-  .default-cursor [draggable="true"]:active,
-  .default-cursor .cursor-move:active,
-  .default-cursor .cursor-grab:active {
-    cursor: grabbing !important;
-  }
-}
-
-/* Show default cursor on touch devices */
-@media (pointer: coarse) {
-  * {
-    cursor: auto !important;
-  }
-}
-
 @layer base {
   * {
     @apply antialiased;

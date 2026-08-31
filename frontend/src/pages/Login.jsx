@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import CustomCursor from '../components/CustomCursor'
 import ScrollProgress from '../components/ScrollProgress'
 import useReducedMotion from '../hooks/useReducedMotion'
 
@@ -47,7 +46,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg relative flex items-center justify-center">
-      <CustomCursor />
       <ScrollProgress />
 
       {/* Background Elements */}

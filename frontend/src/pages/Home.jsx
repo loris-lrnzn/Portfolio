@@ -11,7 +11,6 @@ import FilterBar from '../components/FilterBar'
 import ProjectList from '../components/ProjectList'
 import CallToAction from '../components/CallToAction'
 import ChatInput from '../components/ChatInput'
-import CustomCursor from '../components/CustomCursor'
 import ScrollProgress from '../components/ScrollProgress'
 import ScrollToTop from '../components/ScrollToTop'
 import Footer from '../components/Footer'
@@ -97,7 +96,6 @@ const Home = () => {
       </a>
 
       {/* Custom Cursor - Desktop only */}
-      <CustomCursor />
 
       {/* Scroll Progress Bar */}
       <ScrollProgress />

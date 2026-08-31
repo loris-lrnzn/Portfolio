@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, Download } from 'lucide-react'
 import { useState } from 'react'
 import useReducedMotion from '../hooks/useReducedMotion'
 
@@ -93,6 +93,23 @@ const CallToAction = () => {
             </motion.button>
           </div>
 
+          {/* CV download */}
+          <div className="mb-12">
+            <motion.a
+              href="/CV-Loris-Lorenzini.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              {...getAnimationProps({
+                whileHover: { scale: 1.05 },
+                whileTap: { scale: 0.95 }
+              })}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-900 dark:text-gray-100 hover:border-primary-blue dark:hover:border-primary-cyan hover:text-primary-blue dark:hover:text-primary-cyan transition-colors"
+            >
+              <Download size={16} />
+              Télécharger mon CV
+            </motion.a>
+          </div>
+
           {/* Status */}
           <div className="inline-flex items-center gap-2">
             <span className="relative flex h-2 w-2">
@@ -100,7 +117,7 @@ const CallToAction = () => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
             </span>
             <span className="text-sm text-gray-500 dark:text-gray-400 font-light">
-              Disponible
+              Disponible en alternance — rentrée 2026
             </span>
           </div>
         </motion.div>
