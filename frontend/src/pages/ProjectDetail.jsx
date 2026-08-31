@@ -450,7 +450,7 @@ const ProjectDetail = () => {
             className="mt-12 text-center"
           >
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/#projects')}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Voir tous les projets
