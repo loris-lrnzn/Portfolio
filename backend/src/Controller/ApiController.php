@@ -61,7 +61,7 @@ class ApiController extends AbstractController
     #[Route('/api/projects', name: 'api_projects', methods: ['GET'])]
     public function getProjects(EntityManagerInterface $em): JsonResponse
     {
-        $projects = $em->getRepository(Project::class)->findAll();
+        $projects = $em->getRepository(Project::class)->findBy([], ['position' => 'ASC', 'id' => 'ASC']);
 
         $data = array_map(function (Project $project) {
             return [
@@ -74,6 +74,7 @@ class ApiController extends AbstractController
                 'github_link' => $project->getGithubLink(),
                 'live_url' => $project->getLiveUrl(),
                 'year' => $project->getYear(),
+                'position' => $project->getPosition(),
             ];
         }, $projects);
 
@@ -99,9 +100,44 @@ class ApiController extends AbstractController
             'github_link' => $project->getGithubLink(),
             'live_url' => $project->getLiveUrl(),
             'year' => $project->getYear(),
+            'position' => $project->getPosition(),
         ];
 
         return $this->json($data);
+    }
+
+    #[Route('/api/admin/projects/reorder', name: 'api_admin_projects_reorder', methods: ['PUT'])]
+    public function reorderProjects(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier l'authentification
+        $token = $request->headers->get('Authorization');
+        if ($token) {
+            $token = str_replace('Bearer ', '', $token);
+        }
+
+        $user = AuthService::verifyToken($token);
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? null;
+
+        if (!is_array($ids) || $ids === []) {
+            return $this->json(['error' => 'ids (array) required'], 400);
+        }
+
+        foreach (array_values($ids) as $index => $id) {
+            $project = $em->getRepository(Project::class)->find((int) $id);
+            if (!$project) {
+                return $this->json(['error' => "Project $id not found"], 404);
+            }
+            $project->setPosition($index + 1);
+        }
+
+        $em->flush();
+
+        return $this->json(['success' => true]);
     }
 
 #[Route('/api/admin/projects', name: 'api_admin_projects_create', methods: ['POST'])]
@@ -133,6 +169,10 @@ class ApiController extends AbstractController
         $project->setGithubLink($data['github_link'] ?? '');
         $project->setLiveUrl($data['live_url'] ?? null);
         $project->setYear($data['year'] ?? null);
+
+        // Un nouveau projet est ajouté en fin de liste
+        $max = (int) $em->createQuery('SELECT MAX(p.position) FROM App\\Entity\\Project p')->getSingleScalarResult();
+        $project->setPosition($max + 1);
 
         $em->persist($project);
         $em->flush();

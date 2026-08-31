@@ -35,6 +35,9 @@ class Project
     #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
     private ?string $liveUrl = null;
 
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $position = 0;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -129,6 +132,17 @@ class Project
     public function setLiveUrl(?string $liveUrl): self
     {
         $this->liveUrl = $liveUrl;
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
         return $this;
     }
 }

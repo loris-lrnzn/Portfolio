@@ -6,7 +6,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import {
   Plus, Edit2, Trash2, LogOut, X, Check,
   Search, ExternalLink, FolderOpen,
-  MessageSquare, Calendar, Image as ImageIcon, AlertTriangle, Bot
+  MessageSquare, Calendar, Image as ImageIcon, AlertTriangle, Bot,
+  ArrowUp, ArrowDown
 } from 'lucide-react'
 import axios from 'axios'
 import ScrollProgress from '../components/ScrollProgress'
@@ -27,6 +28,7 @@ const Admin = () => {
   const [chatLogs, setChatLogs] = useState([])
   const [chatbotEnabled, setChatbotEnabled] = useState(true)
   const [savingChatbot, setSavingChatbot] = useState(false)
+  const [reordering, setReordering] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -36,7 +38,7 @@ const Admin = () => {
   // Search and filters
   const [searchQuery, setSearchQuery] = useState('')
   const [yearFilter, setYearFilter] = useState('')
-  const [sortBy, setSortBy] = useState('newest') // 'newest', 'oldest', 'alpha'
+  const [sortBy, setSortBy] = useState('manual') // 'manual', 'newest', 'oldest', 'alpha'
 
   // Form data
   const [formData, setFormData] = useState({
@@ -82,8 +84,11 @@ const Admin = () => {
         result.sort((a, b) => a.title.localeCompare(b.title))
         break
       case 'newest':
-      default:
         result.sort((a, b) => (b.year || 0) - (a.year || 0))
+        break
+      case 'manual':
+      default:
+        result.sort((a, b) => (a.position || 0) - (b.position || 0))
     }
 
     return result
@@ -129,6 +134,33 @@ const Admin = () => {
       toast.error('Erreur lors de la mise à jour du réglage')
     } finally {
       setSavingChatbot(false)
+    }
+  }
+
+  // L'ordre manuel n'est modifiable que si la liste affiche l'ordre réel du site
+  const canReorder = sortBy === 'manual' && !searchQuery && !yearFilter
+
+  const handleMoveProject = async (index, direction) => {
+    const target = index + direction
+    if (target < 0 || target >= filteredProjects.length) return
+
+    const reordered = [...filteredProjects]
+    const [moved] = reordered.splice(index, 1)
+    reordered.splice(target, 0, moved)
+
+    // Mise à jour optimiste, puis persistance
+    const previous = projects
+    setProjects(reordered.map((p, i) => ({ ...p, position: i + 1 })))
+
+    try {
+      setReordering(true)
+      await axios.put(`${API_URL}/admin/projects/reorder`, { ids: reordered.map(p => p.id) })
+    } catch (error) {
+      console.error('Error reordering projects:', error)
+      setProjects(previous)
+      toast.error("Erreur lors du changement d'ordre")
+    } finally {
+      setReordering(false)
     }
   }
 
@@ -413,6 +445,7 @@ const Admin = () => {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:border-primary-blue"
                 >
+                  <option value="manual">Ordre du site</option>
                   <option value="newest">Plus récents</option>
                   <option value="oldest">Plus anciens</option>
                   <option value="alpha">A-Z</option>
@@ -466,6 +499,32 @@ const Admin = () => {
                           <span className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-black/60 text-white text-xs font-medium">
                             +{project.images.length - 1}
                           </span>
+                        )}
+                        {/* Ordre d'affichage sur le site */}
+                        {canReorder && (
+                          <div className="absolute top-2 left-2 flex items-center gap-1">
+                            <span className="px-2 py-1 rounded-lg bg-black/60 text-white text-xs font-medium tabular-nums">
+                              {index + 1}
+                            </span>
+                            <button
+                              onClick={() => handleMoveProject(index, -1)}
+                              disabled={index === 0 || reordering}
+                              title="Monter dans la liste du site"
+                              aria-label={`Monter ${project.title}`}
+                              className="p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ArrowUp size={14} className="pointer-events-none" />
+                            </button>
+                            <button
+                              onClick={() => handleMoveProject(index, 1)}
+                              disabled={index === filteredProjects.length - 1 || reordering}
+                              title="Descendre dans la liste du site"
+                              aria-label={`Descendre ${project.title}`}
+                              className="p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ArrowDown size={14} className="pointer-events-none" />
+                            </button>
+                          </div>
                         )}
                         {/* Quick actions overlay */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
