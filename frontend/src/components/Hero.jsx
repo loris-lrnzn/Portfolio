@@ -64,8 +64,11 @@ const Hero = () => {
 
         {/* Name */}
         <h1>
+          {/* Nom en texte continu : lu par les moteurs de recherche et les
+              lecteurs d'écran, l'animation lettre par lettre restant décorative */}
+          <span className="sr-only">Loris Lorenzini — Développeur Web Full Stack</span>
           {/* LORIS */}
-          <div className="overflow-hidden">
+          <div className="overflow-hidden" aria-hidden="true">
             <div className="flex justify-center">
               {firstName.split('').map((letter, index) => (
                 <motion.span
@@ -83,7 +86,7 @@ const Hero = () => {
           </div>
 
           {/* LORENZINI */}
-          <div className="overflow-hidden">
+          <div className="overflow-hidden" aria-hidden="true">
             <div className="flex justify-center bg-gradient-to-r from-primary-blue via-primary-cyan to-primary-blue bg-clip-text">
               {lastName.split('').map((letter, index) => (
                 <motion.span
