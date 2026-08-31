@@ -7,7 +7,7 @@ import {
   Plus, Edit2, Trash2, LogOut, X, Check,
   Search, ExternalLink, FolderOpen,
   MessageSquare, Calendar, Image as ImageIcon, AlertTriangle, Bot,
-  ArrowUp, ArrowDown, GripVertical
+  GripVertical
 } from 'lucide-react'
 import axios from 'axios'
 import ScrollProgress from '../components/ScrollProgress'
@@ -167,11 +167,9 @@ const Admin = () => {
     }
   }
 
-  const handleMoveProject = (index, direction) => moveProjectTo(index, index + direction)
-
   // Glisser-déposer
   const handleDragStart = (index) => (e) => {
-    if (!canReorder) return
+    if (!canReorder || reordering) return
     setDraggedIndex(index)
     e.dataTransfer.effectAllowed = 'move'
     // Firefox exige des données pour amorcer le glissement
@@ -492,7 +490,7 @@ const Admin = () => {
             {canReorder && !loading && filteredProjects.length > 1 && (
               <p className="mb-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <GripVertical size={14} className="text-gray-400 dark:text-gray-500" />
-                Glissez-déposez les projets pour définir leur ordre sur le site, ou utilisez les flèches.
+                Glissez-déposez les projets pour définir leur ordre sur le site.
               </p>
             )}
 
@@ -559,29 +557,9 @@ const Admin = () => {
                         )}
                         {/* Ordre d'affichage sur le site */}
                         {canReorder && (
-                          <div className="absolute top-2 left-2 flex items-center gap-1">
-                            <span className="px-2 py-1 rounded-lg bg-black/60 text-white text-xs font-medium tabular-nums">
-                              {index + 1}
-                            </span>
-                            <button
-                              onClick={() => handleMoveProject(index, -1)}
-                              disabled={index === 0 || reordering}
-                              title="Monter dans la liste du site"
-                              aria-label={`Monter ${project.title}`}
-                              className="p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <ArrowUp size={14} className="pointer-events-none" />
-                            </button>
-                            <button
-                              onClick={() => handleMoveProject(index, 1)}
-                              disabled={index === filteredProjects.length - 1 || reordering}
-                              title="Descendre dans la liste du site"
-                              aria-label={`Descendre ${project.title}`}
-                              className="p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <ArrowDown size={14} className="pointer-events-none" />
-                            </button>
-                          </div>
+                          <span className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/60 text-white text-xs font-medium tabular-nums">
+                            {index + 1}
+                          </span>
                         )}
                         {/* Quick actions overlay */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
