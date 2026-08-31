@@ -7,7 +7,7 @@ import {
   Plus, Edit2, Trash2, LogOut, X, Check,
   Search, ExternalLink, FolderOpen,
   MessageSquare, Calendar, Image as ImageIcon, AlertTriangle, Bot,
-  ArrowUp, ArrowDown
+  ArrowUp, ArrowDown, GripVertical
 } from 'lucide-react'
 import axios from 'axios'
 import ScrollProgress from '../components/ScrollProgress'
@@ -29,6 +29,8 @@ const Admin = () => {
   const [chatbotEnabled, setChatbotEnabled] = useState(true)
   const [savingChatbot, setSavingChatbot] = useState(false)
   const [reordering, setReordering] = useState(false)
+  const [draggedIndex, setDraggedIndex] = useState(null)
+  const [dragOverIndex, setDragOverIndex] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -140,13 +142,14 @@ const Admin = () => {
   // L'ordre manuel n'est modifiable que si la liste affiche l'ordre réel du site
   const canReorder = sortBy === 'manual' && !searchQuery && !yearFilter
 
-  const handleMoveProject = async (index, direction) => {
-    const target = index + direction
-    if (target < 0 || target >= filteredProjects.length) return
+  // Déplace un projet d'une position à une autre, puis enregistre le nouvel ordre
+  const moveProjectTo = async (from, to) => {
+    if (from === to || from == null || to == null) return
+    if (to < 0 || to >= filteredProjects.length) return
 
     const reordered = [...filteredProjects]
-    const [moved] = reordered.splice(index, 1)
-    reordered.splice(target, 0, moved)
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
 
     // Mise à jour optimiste, puis persistance
     const previous = projects
@@ -162,6 +165,38 @@ const Admin = () => {
     } finally {
       setReordering(false)
     }
+  }
+
+  const handleMoveProject = (index, direction) => moveProjectTo(index, index + direction)
+
+  // Glisser-déposer
+  const handleDragStart = (index) => (e) => {
+    if (!canReorder) return
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+    // Firefox exige des données pour amorcer le glissement
+    e.dataTransfer.setData('text/plain', String(index))
+  }
+
+  const handleDragOver = (index) => (e) => {
+    if (!canReorder || draggedIndex === null) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (index !== dragOverIndex) setDragOverIndex(index)
+  }
+
+  const handleDrop = (index) => (e) => {
+    if (!canReorder || draggedIndex === null) return
+    e.preventDefault()
+    const from = draggedIndex
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+    moveProjectTo(from, index)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
   }
 
   const fetchChatLogs = async () => {
@@ -453,6 +488,14 @@ const Admin = () => {
               </div>
             </motion.div>
 
+            {/* Indication : ordre modifiable */}
+            {canReorder && !loading && filteredProjects.length > 1 && (
+              <p className="mb-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <GripVertical size={14} className="text-gray-400 dark:text-gray-500" />
+                Glissez-déposez les projets pour définir leur ordre sur le site, ou utilisez les flèches.
+              </p>
+            )}
+
             {/* Projects Grid */}
             {loading ? (
               <div className="flex items-center justify-center py-32">
@@ -480,7 +523,20 @@ const Admin = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: index * 0.03 }}
-                      className="group bg-white dark:bg-gray-800/50 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-lg dark:hover:shadow-black/10 transition-all duration-200"
+                      draggable={canReorder}
+                      onDragStart={handleDragStart(index)}
+                      onDragOver={handleDragOver(index)}
+                      onDrop={handleDrop(index)}
+                      onDragEnd={handleDragEnd}
+                      className={`group bg-white dark:bg-gray-800/50 rounded-xl overflow-hidden border transition-all duration-200 hover:shadow-lg dark:hover:shadow-black/10 ${
+                        canReorder ? 'cursor-grab active:cursor-grabbing' : ''
+                      } ${
+                        draggedIndex === index
+                          ? 'opacity-40 border-gray-100 dark:border-gray-800'
+                          : dragOverIndex === index && draggedIndex !== null
+                            ? 'border-primary-blue dark:border-primary-cyan ring-2 ring-primary-blue/40 dark:ring-primary-cyan/40'
+                            : 'border-gray-100 dark:border-gray-800'
+                      }`}
                     >
                       {/* Image */}
                       <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
@@ -488,6 +544,7 @@ const Admin = () => {
                           <img
                             src={project.images?.[0] || project.image_url}
                             alt={project.title}
+                            draggable={false}
                             className="w-full h-full object-cover"
                           />
                         ) : (
