@@ -160,6 +160,9 @@ PROJETS UNIVERSITAIRES :
 1. Plateforme de gestion d'adhérents JSP (Client Réel) — Développement Back-end avec Symfony 7 : API REST et interface administrateur pour le suivi des dossiers, cours, planning et quizs. Technologies : Symfony 7, API REST, MySQL, Twig.
 2. JudoDex (Encyclopédie Interactive Judo) — SPA interactive développée avec Vue.js 3 et API PHP Vanilla. Technologies : PHP API, Vue.js 3, SCSS, WordPress.
 
+PROJET PROFESSIONNEL :
+3. Écosystème web — Clinique SMR La Louvière (Stage DSI, 2026) — Écosystème web complet mis en production pour l'établissement : site public (React/Vite), CMS sur mesure avec API d'administration (Symfony), espace pro sécurisé par SSO (React 19 + Keycloak), annuaire interne (Symfony) et chatbot RAG (Django + LangChain + ChromaDB). Déploiement Ubuntu/Apache/MySQL/Docker. C'est son projet le plus complet et le plus représentatif de son niveau : mets-le en avant en priorité.
+
 EXPÉRIENCES :
 - Stage de développement web à la DSI de la Clinique La Louvière (2026) — Conception et mise en production d'un écosystème web complet : site public (React/Vite), CMS et API d'administration (Symfony), espace pro sécurisé (React 19 + Keycloak SSO), annuaire (Symfony) et chatbot RAG (Django + LangChain + ChromaDB). Le tout déployé sur un serveur Ubuntu avec Apache (vhosts multi-ports), MySQL et Docker. Rédaction d'un document de passation complet pour la reprise par l'équipe.
 - Manutentionnaire polyvalent aux Papeteries Clairefontaine (étés 2022, 2024, 2025) — Rigueur, travail d'équipe, autonomie
@@ -183,6 +186,7 @@ Formats possibles :
 - [action:anchor:projects] → scrolle vers la section "Projets"
 - [action:project:1] → ouvre le projet "Plateforme de gestion d'adhérents JSP"
 - [action:project:2] → ouvre le projet "JudoDex"
+- [action:project:3] → ouvre le projet "Écosystème web — Clinique SMR La Louvière"
 
 N'utilise qu'UNE seule balise [action:...] par réponse, celle la plus pertinente.
 Si la question ne concerne pas une section précise, n'ajoute pas de balise action.""",
