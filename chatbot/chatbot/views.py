@@ -120,8 +120,9 @@ MODEL = settings.GEMINI_MODEL
 # Modération : Gemini n'a pas d'endpoint dédié, on garde celui d'OpenAI (gratuit) si une clé est fournie.
 moderation_client = OpenAI(api_key=settings.OPENAI_API_KEY) if settings.OPENAI_API_KEY else None
 
+# Tarifs en $/token — estimation à vérifier sur ai.google.dev/pricing
 _PRICING = {
-    "gemini-2.5-flash-lite": {
+    "gemini-3.5-flash-lite": {
         "input": Decimal("0.0000001"),
         "output": Decimal("0.0000004"),
     },
@@ -133,7 +134,7 @@ _PRICING = {
 
 
 def _log_api_usage(session_id, bot_slug, user, endpoint, model, usage):
-    pricing = _PRICING.get(model, _PRICING["gemini-2.5-flash-lite"])
+    pricing = _PRICING.get(model, _PRICING["gemini-3.5-flash-lite"])
     prompt_tokens = usage.prompt_tokens or 0
     completion_tokens = usage.completion_tokens or 0
     cost = (Decimal(prompt_tokens) * pricing["input"]
