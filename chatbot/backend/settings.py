@@ -126,7 +126,7 @@ CORS_ALLOW_CREDENTIALS = True
 # ── Gemini (via l'API compatible OpenAI) ──────────────────────────────
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 # Optionnelle : uniquement pour la modération OpenAI (gratuite)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")

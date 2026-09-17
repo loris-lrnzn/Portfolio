@@ -4,6 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, Send, X, Sparkles, ArrowRight } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
 
+// Rend le **gras** du markdown renvoyé par l'assistant
+const renderInline = (text) =>
+  text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i}>{part.slice(2, -2)}</strong>
+      : part
+  )
+
 const ChatInput = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -52,11 +60,11 @@ const ChatInput = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
 
-  const handleSend = useCallback(async (e) => {
-    e.preventDefault()
-    if (!inputValue.trim() || isLoading) return
+  const handleSend = useCallback(async (e, text) => {
+    e?.preventDefault()
+    const question = (text ?? inputValue).trim()
+    if (!question || isLoading) return
 
-    const question = inputValue.trim()
     setInputValue('')
 
     // Add user message
@@ -79,7 +87,8 @@ const ChatInput = () => {
         setMessages(prev => [...prev, {
           type: 'assistant',
           content: data.reply,
-          action: data.action || null
+          action: data.action || null,
+          suggestions: data.suggestions || []
         }])
 
         // Save chat log
@@ -202,7 +211,7 @@ const ChatInput = () => {
                               : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-md'
                         }`}
                       >
-                        <p className="leading-relaxed">{msg.content}</p>
+                        <p className="leading-relaxed whitespace-pre-line">{renderInline(msg.content)}</p>
                         {msg.action && (
                           <button
                             onClick={() => handleAction(msg.action)}
@@ -211,6 +220,21 @@ const ChatInput = () => {
                             {msg.action.type === 'project' ? 'Voir le projet' : 'Voir la section'}
                             <ArrowRight size={12} />
                           </button>
+                        )}
+                        {index === messages.length - 1 && msg.suggestions?.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {msg.suggestions.map((suggestion) => (
+                              <button
+                                key={suggestion}
+                                type="button"
+                                onClick={() => handleSend(null, suggestion)}
+                                disabled={isLoading}
+                                className="px-2.5 py-1 text-xs rounded-full border border-primary-blue/30 text-primary-blue dark:text-primary-cyan hover:bg-primary-blue/10 disabled:opacity-50"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </motion.div>
