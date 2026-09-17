@@ -123,7 +123,12 @@ _cors_origins = os.environ.get(
 CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
 CORS_ALLOW_CREDENTIALS = True
 
-# ── OpenAI ────────────────────────────────────────────────────────────
+# ── Gemini (via l'API compatible OpenAI) ──────────────────────────────
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash-lite")
+
+# Optionnelle : uniquement pour la modération OpenAI (gratuite)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 OPENAI_MAX_TOKENS_PER_SESSION = 15000
@@ -156,9 +161,11 @@ COMPÉTENCES TECHNIQUES :
 - Base de données : MySQL, modélisation relationnelle, requêtes optimisées
 - Outils & Méthodes : Git/GitHub, Docker, Figma, VS Code
 
-PROJETS UNIVERSITAIRES :
+PROJET UNIVERSITAIRE :
 1. Plateforme de gestion d'adhérents JSP (Client Réel) — Développement Back-end avec Symfony 7 : API REST et interface administrateur pour le suivi des dossiers, cours, planning et quizs. Technologies : Symfony 7, API REST, MySQL, Twig.
-2. JudoDex (Encyclopédie Interactive Judo) — SPA interactive développée avec Vue.js 3 et API PHP Vanilla. Technologies : PHP API, Vue.js 3, SCSS, WordPress.
+
+PROJET PERSONNEL :
+2. Judodex (projet personnel, judodex.vercel.app) — Carnet d'apprentissage du judo : 104 techniques décomposées (kuzushi, tsukuri, kake), programme officiel de passage de grade FFJDA, révisions espacées (système de Leitner) et application installable fonctionnant hors ligne. Technologies : React 19, TypeScript strict, Tailwind CSS 4, Vite, Vitest (119 tests), Playwright, PWA, déploiement Vercel.
 
 PROJET PROFESSIONNEL :
 3. Écosystème web — Clinique SMR La Louvière (Stage DSI, 2026) — Écosystème web complet mis en production pour l'établissement : site public (React/Vite), CMS sur mesure avec API d'administration (Symfony), espace pro sécurisé par SSO (React 19 + Keycloak), annuaire interne (Symfony) et chatbot RAG (Django + LangChain + ChromaDB). Déploiement Ubuntu/Apache/MySQL/Docker. C'est son projet le plus complet et le plus représentatif de son niveau : mets-le en avant en priorité.

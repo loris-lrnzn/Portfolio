@@ -114,18 +114,26 @@ def _rate_limit_ip(scope):
         return _wrapped
     return decorator
 
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+client = OpenAI(api_key=settings.GEMINI_API_KEY, base_url=settings.GEMINI_BASE_URL)
+MODEL = settings.GEMINI_MODEL
+
+# Modération : Gemini n'a pas d'endpoint dédié, on garde celui d'OpenAI (gratuit) si une clé est fournie.
+moderation_client = OpenAI(api_key=settings.OPENAI_API_KEY) if settings.OPENAI_API_KEY else None
 
 _PRICING = {
-    "gpt-4o-mini": {
-        "input": Decimal("0.00000015"),
-        "output": Decimal("0.0000006"),
+    "gemini-2.5-flash-lite": {
+        "input": Decimal("0.0000001"),
+        "output": Decimal("0.0000004"),
+    },
+    "gemini-2.5-flash": {
+        "input": Decimal("0.0000003"),
+        "output": Decimal("0.0000025"),
     },
 }
 
 
 def _log_api_usage(session_id, bot_slug, user, endpoint, model, usage):
-    pricing = _PRICING.get(model, _PRICING["gpt-4o-mini"])
+    pricing = _PRICING.get(model, _PRICING["gemini-2.5-flash-lite"])
     prompt_tokens = usage.prompt_tokens or 0
     completion_tokens = usage.completion_tokens or 0
     cost = (Decimal(prompt_tokens) * pricing["input"]
@@ -288,7 +296,7 @@ def _maybe_extract_memories(request, memory_filter, memory_defaults, bot_slug, s
 
     try:
         resp = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=MODEL,
             messages=[
                 {"role": "system", "content": MEMORY_EXTRACTION_PROMPT},
                 {"role": "user", "content": extraction_input},
@@ -300,7 +308,7 @@ def _maybe_extract_memories(request, memory_filter, memory_defaults, bot_slug, s
 
         tokens = resp.usage.total_tokens
         request.session[sk("tokens_used")] = request.session.get(sk("tokens_used"), 0) + tokens
-        _log_api_usage(session_id, bot_slug, request.user, "memory", "gpt-4o-mini", resp.usage)
+        _log_api_usage(session_id, bot_slug, request.user, "memory", MODEL, resp.usage)
     except Exception as e:
         logger.warning("memory extraction failed: %s", e)
 
@@ -317,11 +325,11 @@ def _check_forget_request(user_message, memory_filter, bot_slug):
 
 
 def _moderate_message(message, session_id, bot_slug, user_ip):
-    if not getattr(settings, "CHATBOT_MODERATION_ENABLED", True):
+    if not getattr(settings, "CHATBOT_MODERATION_ENABLED", True) or moderation_client is None:
         return None
 
     try:
-        result = client.moderations.create(
+        result = moderation_client.moderations.create(
             model="omni-moderation-latest",
             input=message,
         )
@@ -501,7 +509,7 @@ def _maybe_summarize(request, session_id, slug, sk, user=None):
         conversation_text += f"{role} : {m.content}\n"
 
     summary_response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=MODEL,
         messages=[{
             "role": "system",
             "content": "Résume cette conversation en 2-3 phrases concises en français. "
@@ -516,7 +524,7 @@ def _maybe_summarize(request, session_id, slug, sk, user=None):
 
     tokens = summary_response.usage.total_tokens
     request.session[sk("tokens_used")] = request.session.get(sk("tokens_used"), 0) + tokens
-    _log_api_usage(session_id, slug, user, "summary", "gpt-4o-mini", summary_response.usage)
+    _log_api_usage(session_id, slug, user, "summary", MODEL, summary_response.usage)
 
     request.session[sk("summary")] = summary
     request.session[sk("summary_count")] = old_count
@@ -778,11 +786,11 @@ def chat_api(request, slug):
         messages_for_api.append({"role": "user", "content": user_message})
 
         Message.objects.create(content=user_message, sender="user", session_id=session_id, bot_slug=slug)
-        response = client.chat.completions.create(model="gpt-4o-mini", messages=messages_for_api)
+        response = client.chat.completions.create(model=MODEL, messages=messages_for_api)
         reply = response.choices[0].message.content
         tokens_this_response = response.usage.total_tokens
         request.session[sk("tokens_used")] = request.session.get(sk("tokens_used"), 0) + tokens_this_response
-        _log_api_usage(session_id, slug, request.user, "chat", "gpt-4o-mini", response.usage)
+        _log_api_usage(session_id, slug, request.user, "chat", MODEL, response.usage)
 
         Message.objects.create(content=reply, sender="bot", session_id=session_id, bot_slug=slug)
 
