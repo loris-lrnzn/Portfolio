@@ -36,6 +36,8 @@ echo "   ✓ Frontend buildé dans frontend/dist/"
 echo ""
 echo "→ [3/4] Build et démarrage des conteneurs Docker..."
 docker compose -f docker-compose.prod.yml up -d --build
+# Nginx garde en cache les IP des conteneurs : on le redémarre pour suivre ceux recréés
+docker compose -f docker-compose.prod.yml restart nginx
 
 # 4. Attendre que les services soient prêts
 echo ""
